@@ -32,6 +32,7 @@ class ConsultationController extends Controller
     ) {
         $this->consultationService = $consultationService;
         $this->facturationService = $facturationService;
+        $this->authorizeResource(Consultation::class, 'consultation');
     }
 
     /**
@@ -287,7 +288,7 @@ class ConsultationController extends Controller
     /**
      * Valider une consultation
      */
-    public function validate(Request $request, Consultation $consultation)
+    public function validateConsultation(Request $request, Consultation $consultation)
     {
         Gate::authorize('validate', $consultation);
 

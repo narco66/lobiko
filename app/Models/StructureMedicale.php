@@ -375,6 +375,9 @@ class StructureMedicale extends Model
      */
     public function scopeNearby($query, $latitude, $longitude, $radius = 10)
     {
+        $lat = (float) $latitude;
+        $lon = (float) $longitude;
+        $rad = (float) $radius;
         $haversine = "(6371 * acos(cos(radians($latitude))
             * cos(radians(latitude))
             * cos(radians(longitude) - radians($longitude))
@@ -383,7 +386,7 @@ class StructureMedicale extends Model
 
         return $query->select('*')
             ->selectRaw("{$haversine} AS distance")
-            ->whereRaw("{$haversine} < ?", [$radius])
+            ->whereRaw("{$haversine} < ?", [$rad])
             ->orderBy('distance');
     }
 

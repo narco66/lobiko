@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -58,7 +59,8 @@ class UserFactory extends Factory
             'statut_compte' => 'actif',
         ])->afterCreating(function ($user) {
             if (method_exists($user, 'assignRole')) {
-                $user->assignRole('patient');
+                $role = Role::firstOrCreate(['name' => 'patient', 'guard_name' => 'web']);
+                $user->assignRole($role);
             }
         });
     }
@@ -71,7 +73,8 @@ class UserFactory extends Factory
             'certification_verified' => true,
         ])->afterCreating(function ($user) {
             if (method_exists($user, 'assignRole')) {
-                $user->assignRole('medecin');
+                $role = Role::firstOrCreate(['name' => 'medecin', 'guard_name' => 'web']);
+                $user->assignRole($role);
             }
         });
     }
@@ -84,7 +87,8 @@ class UserFactory extends Factory
             'certification_verified' => true,
         ])->afterCreating(function ($user) {
             if (method_exists($user, 'assignRole')) {
-                $user->assignRole('pharmacien');
+                $role = Role::firstOrCreate(['name' => 'pharmacien', 'guard_name' => 'web']);
+                $user->assignRole($role);
             }
         });
     }

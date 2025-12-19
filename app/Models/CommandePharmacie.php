@@ -65,6 +65,10 @@ class CommandePharmacie extends Model
     {
         parent::boot();
 
+        static::creating(function () {
+            throw new \Exception('Le modèle CommandePharmacie est déprécié. Utilisez CommandePharmaceutique.');
+        });
+
         static::creating(function ($commande) {
             if (empty($commande->numero_commande)) {
                 $commande->numero_commande = self::generateNumeroCommande();

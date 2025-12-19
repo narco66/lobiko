@@ -548,7 +548,7 @@ class PriseEnChargeController extends Controller
             'montant_demande' => (clone $query)->sum('montant_demande'),
             'montant_accorde' => (clone $query)->acceptees()->sum('montant_accorde'),
             'delai_moyen' => (clone $query)->whereNotNull('date_reponse')
-                ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, date_demande, date_reponse)) as delai')
+                ->select(DB::raw('AVG(TIMESTAMPDIFF(HOUR, date_demande, date_reponse)) as delai'))
                 ->value('delai'),
             'top_praticiens' => (clone $query)
                 ->select('praticien_id', DB::raw('COUNT(*) as total'))
@@ -587,7 +587,7 @@ class PriseEnChargeController extends Controller
         };
 
         return PriseEnCharge::where('date_demande', '>=', $dateDebut)
-            ->selectRaw("{$groupBy} as periode, statut, COUNT(*) as total")
+            ->select(DB::raw("{$groupBy} as periode"), 'statut', DB::raw('COUNT(*) as total'))
             ->groupBy('periode', 'statut')
             ->orderBy('periode')
             ->get()
@@ -600,10 +600,10 @@ class PriseEnChargeController extends Controller
     private function getRepartitionPEC()
     {
         return [
-            'par_statut' => PriseEnCharge::selectRaw('statut, COUNT(*) as total')
+            'par_statut' => PriseEnCharge::select('statut', DB::raw('COUNT(*) as total'))
                 ->groupBy('statut')
                 ->pluck('total', 'statut'),
-            'par_type' => PriseEnCharge::selectRaw('type_pec, COUNT(*) as total')
+            'par_type' => PriseEnCharge::select('type_pec', DB::raw('COUNT(*) as total'))
                 ->groupBy('type_pec')
                 ->pluck('total', 'type_pec'),
         ];
@@ -623,11 +623,11 @@ class PriseEnChargeController extends Controller
         };
 
         return PriseEnCharge::where('date_demande', '>=', $dateDebut)
-            ->selectRaw('
-                DATE_FORMAT(date_demande, "%Y-%m") as mois,
-                COUNT(*) as total,
-                SUM(CASE WHEN statut = "acceptee" THEN 1 ELSE 0 END) as acceptees
-            ')
+            ->select(
+                DB::raw('DATE_FORMAT(date_demande, "%Y-%m") as mois'),
+                DB::raw('COUNT(*) as total'),
+                DB::raw('SUM(CASE WHEN statut = "acceptee" THEN 1 ELSE 0 END) as acceptees')
+            )
             ->groupBy('mois')
             ->orderBy('mois')
             ->get()

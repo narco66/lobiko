@@ -35,6 +35,7 @@ class OrdonnanceController extends Controller
         $this->middleware('permission:ordonnances.create')->only(['create', 'store']);
         $this->middleware('permission:ordonnances.edit')->only(['edit', 'update']);
         $this->middleware('permission:ordonnances.delete')->only(['destroy']);
+        $this->authorizeResource(Ordonnance::class, 'ordonnance');
     }
 
     /**

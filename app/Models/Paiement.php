@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\CommandePharmacie;
+use App\Models\CommandePharmaceutique;
 use App\Models\Facture;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -43,9 +43,19 @@ class Paiement extends Model
         'montant_devise_locale',
         'frais_transaction',
         'montant_net',
+        'montant_pharmacie',
+        'montant_livreur',
+        'commission_plateforme',
         'reference_transaction',
         'reference_passerelle',
         'statut',
+        'statut_cantonnement',
+        'reversement_genere',
+        'reversement_pharmacie_id',
+        'reversement_livreur_id',
+        'payout_tagged_at',
+        'date_cantonnement',
+        'date_liberation',
         'idempotence_key',
         'tentatives',
         'derniere_tentative',
@@ -77,6 +87,9 @@ class Paiement extends Model
         'taux_change' => 'decimal:4',
         'frais_transaction' => 'decimal:2',
         'montant_net' => 'decimal:2',
+        'montant_pharmacie' => 'decimal:2',
+        'montant_livreur' => 'decimal:2',
+        'commission_plateforme' => 'decimal:2',
         'remboursable' => 'boolean',
         'valide' => 'boolean',
         'reponse_passerelle' => 'array',
@@ -86,7 +99,11 @@ class Paiement extends Model
         'date_remboursement' => 'datetime',
         'valide_at' => 'datetime',
         'derniere_tentative' => 'datetime',
+        'date_cantonnement' => 'datetime',
+        'date_liberation' => 'datetime',
         'tentatives' => 'integer',
+        'reversement_genere' => 'boolean',
+        'payout_tagged_at' => 'datetime',
     ];
 
     public static function generateNumero(): string
@@ -114,7 +131,7 @@ class Paiement extends Model
 
     public function commande(): BelongsTo
     {
-        return $this->belongsTo(CommandePharmacie::class, 'commande_id');
+        return $this->belongsTo(CommandePharmaceutique::class, 'commande_id');
     }
 
     public function reference(): MorphTo

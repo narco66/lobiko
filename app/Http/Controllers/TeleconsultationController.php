@@ -32,8 +32,8 @@ class TeleconsultationController extends Controller
                 'status' => 'pending',
                 'provider' => config('services.teleconsultation.provider', 'jitsi'),
                 'room_name' => 'consultation-' . $consultation->id,
-                'patient_token' => Str::random(48),
-                'practitioner_token' => Str::random(48),
+                'patient_token' => Str::random(64),
+                'practitioner_token' => Str::random(64),
                 'token_expires_at' => now()->addHours(12),
             ]
         );
@@ -46,8 +46,8 @@ class TeleconsultationController extends Controller
         }
 
         $session->update([
-            'patient_token' => Str::random(48),
-            'practitioner_token' => Str::random(48),
+            'patient_token' => Str::random(64),
+            'practitioner_token' => Str::random(64),
             'token_expires_at' => now()->addHours(12),
         ]);
 
@@ -140,19 +140,7 @@ class TeleconsultationController extends Controller
         $user = Auth::user();
         $isPractitioner = $user && $user->id === $consultation->professionnel_id;
 
-        if ($session->status === 'pending' && !$isPractitioner) {
-            Log::warning('Teleconsultation join denied (waiting room)', [
-                'session_id' => $session->id,
-                'user_id' => optional($user)->id,
-                'consultation_id' => $consultation->id,
-            ]);
-            return response()->json([
-                'message' => 'Salle en attente. Le professionnel doit ouvrir la session.',
-                'status' => $session->status,
-            ], 423);
-        }
-
-        if ($session->status === 'pending' && $isPractitioner) {
+        if ($session->status === 'pending') {
             $session->update([
                 'status' => 'live',
                 'started_at' => $session->started_at ?? now(),

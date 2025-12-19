@@ -21,8 +21,11 @@ class RendezVousController extends Controller
     public function index()
     {
         $upcoming = [];
+        $user = auth()->user();
 
         $records = RendezVous::query()
+            ->when($user && $user->hasRole('medecin'), fn ($q) => $q->where('professionnel_id', $user->id))
+            ->when($user && $user->hasRole('patient'), fn ($q) => $q->where('patient_id', $user->id))
             ->orderBy('date_heure')
             ->whereDate('date_heure', '>=', now()->toDateString())
             ->limit(10)

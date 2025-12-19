@@ -2,58 +2,44 @@
 
 namespace Database\Factories;
 
+use App\Models\Facture;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Facture>
- */
 class FactureFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = Facture::class;
+
     public function definition(): array
     {
-        $montant = $this->faker->randomFloat(2, 100, 2000);
-        $montantTva = 0;
-        $montantFinal = $montant + $montantTva;
+        $patient = User::factory()->create();
+        $pro = User::factory()->medecin()->create();
 
         return [
-            'numero_facture' => 'FAC-' . now()->format('Ym') . '-' . $this->faker->unique()->numerify('#####'),
-            'patient_id' => User::factory(),
-            'praticien_id' => User::factory()->medecin(),
-            'structure_id' => null,
+            'numero_facture' => 'FAC-' . Str::upper(Str::random(8)),
+            'patient_id' => $patient->id,
+            'praticien_id' => $pro->id,
             'type' => 'consultation',
             'nature' => 'normale',
-            'montant_ht' => $montant,
-            'montant_tva' => $montantTva,
-            'montant_ttc' => $montantFinal,
+            'montant_ht' => 1000,
+            'montant_tva' => 0,
+            'montant_ttc' => 1000,
             'montant_remise' => 0,
             'montant_majoration' => 0,
-            'montant_final' => $montantFinal,
-            'part_patient' => $montantFinal,
+            'montant_final' => 1000,
+            'part_patient' => 1000,
             'part_assurance' => 0,
             'part_subvention' => 0,
-            'repartition_payeurs' => null,
-            'pec_id' => null,
-            'tiers_payant' => false,
-            'montant_pec' => 0,
-            'reste_a_charge' => $montantFinal,
-            'date_facture' => now(),
-            'date_echeance' => now()->addDays(30),
-            'delai_paiement' => 30,
-            'statut_paiement' => 'en_attente',
+            'reste_a_charge' => 1000,
+            'date_facture' => now()->toDateString(),
+            'date_echeance' => now()->addDays(30)->toDateString(),
             'montant_paye' => 0,
-            'montant_restant' => $montantFinal,
-            'nombre_relances' => 0,
+            'montant_restant' => 1000,
+            'statut_paiement' => 'en_attente',
+            'delai_paiement' => 30,
             'nombre_paiements' => 0,
-            'originale_remise' => false,
-            'comptabilisee' => false,
-            'notes_internes' => null,
-            'mentions_legales' => null,
+            'nombre_relances' => 0,
         ];
     }
 }

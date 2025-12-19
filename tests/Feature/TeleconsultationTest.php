@@ -74,6 +74,49 @@ class TeleconsultationTest extends TestCase
             ->assertJsonFragment(['token' => 'tok-patient']);
     }
 
+    public function test_tokens_regenerate_after_expiry(): void
+    {
+        $patient = User::factory()->create();
+        $pro = User::factory()->create();
+        $consultation = $this->makeConsultation($patient, $pro);
+        $session = TeleconsultationSession::create([
+            'consultation_id' => $consultation->id,
+            'status' => 'pending',
+            'provider' => 'jitsi',
+            'room_name' => 'consultation-' . $consultation->id,
+            'patient_token' => 'tok-expired',
+            'practitioner_token' => 'tok-pro',
+            'token_expires_at' => now()->subMinutes(5),
+        ]);
+
+        $response = $this->actingAs($patient)
+            ->postJson(route('teleconsultation.join', $consultation))
+            ->assertOk()
+            ->assertJsonFragment(['status' => 'live']);
+
+        $this->assertNotEquals('tok-expired', $response->json('token'));
+        $this->assertNotEquals('tok-expired', $session->fresh()->patient_token);
+    }
+
+    public function test_unauthorized_user_cannot_join(): void
+    {
+        $patient = User::factory()->create();
+        $pro = User::factory()->create();
+        $consultation = $this->makeConsultation($patient, $pro);
+        TeleconsultationSession::create([
+            'consultation_id' => $consultation->id,
+            'status' => 'pending',
+            'provider' => 'jitsi',
+            'room_name' => 'consultation-' . $consultation->id,
+            'patient_token' => 'tok-patient',
+            'practitioner_token' => 'tok-pro',
+        ]);
+
+        $this->actingAs(User::factory()->create())
+            ->postJson(route('teleconsultation.join', $consultation))
+            ->assertForbidden();
+    }
+
     public function test_signed_file_download(): void
     {
         $patient = User::factory()->create();

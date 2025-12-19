@@ -25,6 +25,9 @@ class StructureMedicaleFactory extends Factory
             'adresse_pays' => 'Gabon',
             'telephone_principal' => fake()->numerify('+2410########'),
             'email' => fake()->companyEmail(),
+            'latitude' => 0.0,
+            'longitude' => 0.0,
+            'responsable_id' => \App\Models\User::factory(),
             'horaires_ouverture' => [
                 'monday' => '08:00-17:00',
                 'tuesday' => '08:00-17:00',

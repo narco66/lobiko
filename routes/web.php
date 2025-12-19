@@ -6,7 +6,10 @@ use App\Http\Controllers\PublicServiceRequestController;
 use App\Http\Controllers\Admin\ServiceRequestAdminController;
 use App\Http\Controllers\Admin\RequestStatusController;
 use App\Http\Controllers\TeleconsultationController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\CommandePharmaceutiqueController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -18,26 +21,23 @@ Route::get('/services', function () {
 // Pages publiques complémentaires
 Route::get('/about', fn () => view('about'))->name('about');
 Route::get('/pricing', [HomeController::class, 'pricing'])->name('pricing');
-Route::get('/careers', fn () => view('pages.placeholder', [
-    'title' => 'Carrières',
-    'section' => 'Carrières',
-    'message' => 'Rejoignez-nous : les offres seront publiées ici.'
-]))->name('careers');
-Route::get('/partners', fn () => view('pages.placeholder', [
-    'title' => 'Partenaires',
-    'section' => 'Partenaires',
-    'message' => 'Espace partenaires en préparation.'
-]))->name('partners');
+Route::get('/careers', fn () => view('pages.careers'))->name('careers');
+Route::prefix('partners')->group(function () {
+    Route::get('/', [\App\Http\Controllers\PartnerController::class, 'index'])->name('partners');
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::get('/create', [\App\Http\Controllers\PartnerController::class, 'create'])->name('partners.create');
+        Route::post('/', [\App\Http\Controllers\PartnerController::class, 'store'])->name('partners.store');
+        Route::get('/{partner}/edit', [\App\Http\Controllers\PartnerController::class, 'edit'])->name('partners.edit');
+        Route::put('/{partner}', [\App\Http\Controllers\PartnerController::class, 'update'])->name('partners.update');
+        Route::delete('/{partner}', [\App\Http\Controllers\PartnerController::class, 'destroy'])->name('partners.destroy');
+    });
+});
 Route::get('/press', fn () => view('pages.placeholder', [
     'title' => 'Presse',
     'section' => 'Presse',
     'message' => 'Kit média et communiqués à venir.'
 ]))->name('press');
-Route::get('/faq', fn () => view('pages.placeholder', [
-    'title' => 'FAQ',
-    'section' => 'Support',
-    'message' => 'Questions fréquentes en cours de rédaction.'
-]))->name('faq');
+Route::get('/faq', [\App\Http\Controllers\FaqController::class, 'index'])->name('faq');
 Route::get('/help', fn () => view('pages.placeholder', [
     'title' => 'Centre d’aide',
     'section' => 'Support',
@@ -107,11 +107,19 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/requests', [ServiceRequestAdminController::class, 'index'])->name('requests.index');
     Route::get('/requests/export', [ServiceRequestAdminController::class, 'export'])->name('requests.export');
     Route::post('/requests/status', [RequestStatusController::class, 'update'])->name('requests.status');
+
+    Route::resource('structures', \App\Http\Controllers\MedicalStructureController::class);
+    Route::resource('doctors', \App\Http\Controllers\DoctorController::class);
+    Route::resource('specialties', \App\Http\Controllers\SpecialtyController::class)->except(['show']);
+    Route::resource('services', \App\Http\Controllers\MedicalServiceController::class);
+    Route::post('doctor-schedules', [\App\Http\Controllers\DoctorScheduleController::class, 'store'])->name('doctor-schedules.store');
+    Route::delete('doctor-schedules/{doctorSchedule}', [\App\Http\Controllers\DoctorScheduleController::class, 'destroy'])->name('doctor-schedules.destroy');
+    Route::get('payments', [\App\Http\Controllers\PaymentWebController::class, 'index'])->name('payments.index');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', DashboardController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 // Télconsultation (protégé auth)
 Route::middleware('auth')->prefix('teleconsultation')->group(function () {
@@ -122,12 +130,67 @@ Route::middleware('auth')->prefix('teleconsultation')->group(function () {
     Route::post('/room/{consultation}/message', [TeleconsultationController::class, 'sendMessage'])->name('teleconsultation.message');
     Route::post('/room/{consultation}/file', [TeleconsultationController::class, 'shareFile'])->name('teleconsultation.file');
     Route::get('/file/{consultation}/{file}', [TeleconsultationController::class, 'downloadFile'])->name('teleconsultation.file.download');
+    Route::get('/', fn () => view('teleconsultations.index'))->name('teleconsultation.index');
 });
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::resource('dossiers-medicaux', \App\Http\Controllers\DossierMedicalController::class);
+    Route::resource('users', UserController::class)->except(['destroy']);
+    Route::resource('consultations', \App\Http\Controllers\ConsultationController::class)->except(['destroy']);
+    Route::resource('ordonnances', \App\Http\Controllers\OrdonnanceController::class);
+
+    // Commandes pharmaceutiques (commande → préparation → livraison/retrait)
+    Route::prefix('commandes-pharma')->as('commandes-pharma.')->group(function () {
+        Route::get('/', [CommandePharmaceutiqueController::class, 'index'])->name('index');
+        Route::get('/create', [CommandePharmaceutiqueController::class, 'create'])->name('create');
+        Route::post('/', [CommandePharmaceutiqueController::class, 'store'])->name('store');
+        Route::get('/dashboard', [CommandePharmaceutiqueController::class, 'dashboard'])->name('dashboard');
+        Route::get('/suivi/{numeroCommande}', [CommandePharmaceutiqueController::class, 'suivre'])->name('suivi');
+        Route::get('/valider-code/{code}', [CommandePharmaceutiqueController::class, 'validerCode'])->name('valider-code');
+        Route::get('/{commande}/bon', [CommandePharmaceutiqueController::class, 'telechargerBon'])->name('bon');
+        Route::get('/recherche/produits', [CommandePharmaceutiqueController::class, 'rechercherProduits'])->name('recherche-produits');
+        Route::get('/{commande}', [CommandePharmaceutiqueController::class, 'show'])->name('show');
+        Route::post('/{commande}/confirmer', [CommandePharmaceutiqueController::class, 'confirmer'])->name('confirmer');
+        Route::post('/{commande}/preparer', [CommandePharmaceutiqueController::class, 'preparer'])->name('preparer');
+        Route::post('/{commande}/prete', [CommandePharmaceutiqueController::class, 'marquerPrete'])->name('prete');
+        Route::post('/{commande}/livraison', [CommandePharmaceutiqueController::class, 'demarrerLivraison'])->name('livraison');
+        Route::post('/{commande}/livree', [CommandePharmaceutiqueController::class, 'confirmerLivraison'])->name('livree');
+        Route::post('/{commande}/annuler', [CommandePharmaceutiqueController::class, 'annuler'])->name('annuler');
+    });
 });
+
+// Déconnexion via GET pour éviter 419 si l’URL est appelée directement
+Route::get('/logout', function () {
+    \Illuminate\Support\Facades\Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect()->route('home');
+})->name('logout.get');
+
+// Blog (admin)
+Route::middleware(['auth', 'verified'])
+    ->prefix('admin/blog')
+    ->as('admin.blog.')
+    ->group(function () {
+        Route::get('/posts', [\App\Http\Controllers\BlogPostController::class, 'index'])->name('posts.index');
+        Route::get('/posts/create', [\App\Http\Controllers\BlogPostController::class, 'create'])->name('posts.create');
+        Route::post('/posts', [\App\Http\Controllers\BlogPostController::class, 'store'])->name('posts.store');
+        Route::get('/posts/{article}/edit', [\App\Http\Controllers\BlogPostController::class, 'edit'])->name('posts.edit');
+        Route::put('/posts/{article}', [\App\Http\Controllers\BlogPostController::class, 'update'])->name('posts.update');
+        Route::delete('/posts/{article}', [\App\Http\Controllers\BlogPostController::class, 'destroy'])->name('posts.destroy');
+        Route::post('/posts/{article}/publish', [\App\Http\Controllers\BlogPostController::class, 'publish'])->name('posts.publish');
+        Route::post('/posts/{article}/unpublish', [\App\Http\Controllers\BlogPostController::class, 'unpublish'])->name('posts.unpublish');
+
+        Route::resource('categories', \App\Http\Controllers\BlogCategoryController::class)->except(['show']);
+        Route::resource('tags', \App\Http\Controllers\BlogTagController::class)->except(['show']);
+
+        Route::get('/media', [\App\Http\Controllers\MediaController::class, 'index'])->name('media.index');
+        Route::post('/media', [\App\Http\Controllers\MediaController::class, 'store'])->name('media.store');
+        Route::delete('/media/{media}', [\App\Http\Controllers\MediaController::class, 'destroy'])->name('media.destroy');
+    });
 
 require __DIR__.'/auth.php';

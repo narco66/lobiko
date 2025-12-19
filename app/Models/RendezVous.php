@@ -2,12 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RendezVous extends Model
 {
+    use HasFactory;
+
     protected $table = 'rendez_vous';
+    public $incrementing = false;
+    protected $keyType = 'string';
+    protected $guarded = [];
 
     protected $fillable = [
         'numero_rdv',
@@ -49,6 +55,7 @@ class RendezVous extends Model
         'documents_requis',
         'montant_prevu',
         'paiement_confirme',
+        'id',
     ];
 
     protected $casts = [

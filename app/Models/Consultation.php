@@ -73,18 +73,19 @@ class Consultation extends Model
         'prochain_rdv' => 'date',
         'valide_at' => 'datetime',
         'symptomes_declares' => 'array',
-        'signes_vitaux' => 'array',
-        'examens_complementaires_demandes' => 'array',
-        'actes_realises' => 'array',
-        'prescriptions' => 'array',
-        'examens_prescrits' => 'array',
-        'documents_joints' => 'array',
+        'signes_vitaux' => 'encrypted:array',
+        'examens_complementaires_demandes' => 'encrypted:array',
+        'actes_realises' => 'encrypted:array',
+        'prescriptions' => 'encrypted:array',
+        'examens_prescrits' => 'encrypted:array',
+        'documents_joints' => 'encrypted:array',
         'ordonnance_delivree' => 'boolean',
         'arret_travail' => 'boolean',
         'certificat_medical' => 'boolean',
         'orientation_specialiste' => 'boolean',
         'hospitalisation' => 'boolean',
-        'valide' => 'boolean'
+        'valide' => 'boolean',
+        'notes_privees' => 'encrypted',
     ];
 
     /**

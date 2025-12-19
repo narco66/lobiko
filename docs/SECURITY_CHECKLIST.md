@@ -1,0 +1,36 @@
+SECURITY CHECKLIST
+
+- Auth & Rate limiting
+  - [x] Login throttle 5/min (RateLimiter login)
+  - [x] Sensitive throttle 30/min
+  - [ ] Appliquer throttle middleware sur endpoints critiques si nouveaux ajouts
+- Sessions & Cookies
+  - [x] SESSION_SECURE_COOKIE par défaut true
+  - [x] same_site=lax (ajuster à strict en production si nécessaire)
+  - [ ] Vérifier HTTPS partout en prod
+- Données sensibles
+  - [x] Dossier médical/consultation : champs chiffrés (encrypted/array)
+  - [x] Téléconsultation tokens chiffrés + expiration
+  - [x] 2FA secrets/recovery chiffrés
+  - [x] Paiements : pas de secrets stockés, réponses passerelle en array
+- Permissions/Policies
+  - [x] ConsultationPolicy, DossierMedicalPolicy, OrdonnancePolicy, FacturePolicy enregistrées
+  - [x] authorizeResource sur contrôleurs sensibles (Consultation, DossierMedical, Ordonnance, Facture)
+- Webhooks/Idempotence
+  - [x] Paiements : HMAC `X-Signature` avec `services.payments.webhook_secret`
+  - [x] Idempotency-Key sur payments.store
+- Logging/Audit
+  - [x] activity_log présent
+  - [x] Logs webhook/paiements/téléconsultation
+  - [ ] Ne pas logguer secrets (revue régulière)
+- Indices & perfs
+  - [x] Index migrations consultations/factures (patient/pro/praticien/structure)
+  - [x] Cache référentiel actes (6h)
+- RGPD
+  - [x] Commande anonymisation users soft-deleted
+  - [x] Commandes purge sessions/logs
+- Tests
+  - [x] Policies (Consultation, Dossier, Ordonnance, Facture)
+  - [x] Paiement idempotence + webhook signature
+  - [x] Téléconsultation tokens expirés/unauthorized
+  - [ ] Ajouter tests throttle si nouveaux endpoints sensibles

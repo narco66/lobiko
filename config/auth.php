@@ -112,4 +112,24 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Comptes de test exemptés de vérification e-mail
+    |--------------------------------------------------------------------------
+    |
+    | Permet de whitelister certains comptes de test pour bypasser la
+    | vérification d'e-mail uniquement lorsque l'option est activée.
+    | Désactivez en production via AUTH_TEST_BYPASS=false.
+    |
+    */
+    'allow_test_account_email_bypass' => (bool) env('AUTH_TEST_BYPASS', false),
+    'test_accounts' => array_filter(array_map('trim', explode(',', env('AUTH_TEST_EMAILS', '')))) ?: [
+        'admin@lobiko.com',
+        'dr.martin@lobiko.com',
+        'patient.test@lobiko.com',
+        'pharmacie.centrale@lobiko.com',
+        'assurance@lobiko.com',
+        'comptable@lobiko.com',
+    ],
+
 ];

@@ -11,7 +11,7 @@ class CommandePharmacieRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return auth()->check();
     }
 
     /**
@@ -22,7 +22,10 @@ class CommandePharmacieRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'patient_id' => ['required', 'uuid', 'exists:users,id'],
+            'pharmacie_id' => ['required', 'uuid'],
+            'mode_livraison' => ['required', 'in:livraison,retrait,domicile,point_relais'],
+            'adresse_livraison' => ['nullable', 'string'],
         ];
     }
 }

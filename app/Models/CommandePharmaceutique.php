@@ -44,6 +44,7 @@ class CommandePharmaceutique extends Model
         'code_retrait',
         'instructions_speciales',
         'urgent',
+        'statut_paiement',
     ];
 
     /**
@@ -64,6 +65,7 @@ class CommandePharmaceutique extends Model
         'date_livraison_prevue' => 'datetime',
         'date_livraison_effective' => 'datetime',
         'urgent' => 'boolean',
+        'statut_paiement' => 'string',
     ];
 
     /**
@@ -402,6 +404,14 @@ class CommandePharmaceutique extends Model
             $ligne->save();
         }
 
+        // Libérer les fonds cantonnés liés à la commande
+        $this->paiements()
+            ->where('statut_cantonnement', 'bloque')
+            ->update([
+                'statut_cantonnement' => 'libere',
+                'date_liberation' => now(),
+            ]);
+
         return $this;
     }
 
@@ -452,6 +462,23 @@ class CommandePharmaceutique extends Model
         return $montantPaye >= $this->montant_patient;
     }
 
+    public function majStatutPaiement(): void
+    {
+        $montantPaye = $this->paiements()
+            ->where('statut', 'confirme')
+            ->sum('montant');
+
+        if ($montantPaye <= 0) {
+            $this->statut_paiement = 'en_attente';
+        } elseif ($montantPaye < $this->montant_patient) {
+            $this->statut_paiement = 'partiel';
+        } else {
+            $this->statut_paiement = 'paye';
+        }
+
+        $this->save();
+    }
+
     /**
      * Obtenir le montant restant à payer
      */
@@ -462,6 +489,13 @@ class CommandePharmaceutique extends Model
             ->sum('montant');
 
         return max(0, $this->montant_patient - $montantPaye);
+    }
+
+    public function getMontantPaye()
+    {
+        return $this->paiements()
+            ->where('statut', 'confirme')
+            ->sum('montant');
     }
 
     /**

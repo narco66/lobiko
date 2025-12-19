@@ -136,7 +136,7 @@ return new class extends Migration
         Schema::create('partners', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('logo');
+            $table->string('logo')->nullable();
             $table->string('website')->nullable();
             $table->text('description')->nullable();
             $table->enum('type', ['payment', 'insurance', 'medical', 'logistics', 'technology', 'other']);

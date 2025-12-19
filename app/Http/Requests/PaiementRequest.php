@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class PaiementRequest extends FormRequest
 {
@@ -22,9 +23,14 @@ class PaiementRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'facture_id' => ['required', 'uuid', 'exists:factures,id'],
+            'facture_id' => ['nullable', 'uuid', 'exists:factures,id'],
             'payeur_id' => ['nullable', 'uuid', 'exists:users,id'],
-            'commande_id' => ['nullable', 'uuid', 'exists:commandes_pharmacie,id'],
+            'commande_id' => [
+                'nullable',
+                'uuid',
+                'exists:commandes_pharmaceutiques,id',
+                Rule::requiredIf(fn () => !$this->facture_id && ($this->type_reference === 'commande_pharmaceutique')),
+            ],
             'reference_id' => ['nullable', 'uuid'],
             'type_reference' => ['nullable', 'string', 'max:100'],
             'type_payeur' => ['required', 'in:patient,assurance,subvention'],

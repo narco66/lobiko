@@ -12,6 +12,7 @@ use App\Models\Statistique;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 class HomeController extends Controller
 {
@@ -20,6 +21,8 @@ class HomeController extends Controller
      */
     public function index()
     {
+        $this->ensureRoles(['patient', 'medecin']);
+
         // Récupération des statistiques avec cache de 1 heure
         $stats = Cache::remember('home_stats', 3600, function () {
             return [
@@ -136,6 +139,13 @@ class HomeController extends Controller
             'specialities',
             'cities'
         ));
+    }
+
+    private function ensureRoles(array $roles): void
+    {
+        foreach ($roles as $role) {
+            Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
+        }
     }
 
     /**

@@ -2,16 +2,36 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\PaymentConfirmed;
 use App\Http\Requests\PaiementRequest;
 use App\Http\Resources\PaiementResource;
-use App\Models\Facture;
 use App\Models\Paiement;
+use App\Services\Payments\PaymentService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class PaiementController extends Controller
 {
+    public function __construct(private readonly PaymentService $paymentService)
+    {
+    }
+
+    /**
+     * Liste paginée des paiements (lecture seule).
+     */
+    public function index(Request $request)
+    {
+        $query = Paiement::query()
+            ->select(['id', 'reference', 'statut', 'montant', 'payeur_id', 'facture_id', 'created_at'])
+            ->orderByDesc('created_at');
+
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->input('statut'));
+        }
+
+        $payments = $query->paginate(15);
+
+        return PaiementResource::collection($payments);
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -19,28 +39,23 @@ class PaiementController extends Controller
     {
         $validated = $request->validated();
 
-        $facture = Facture::findOrFail($validated['facture_id']);
-        $payeurId = $validated['payeur_id'] ?? $facture->patient_id;
+        // Forcer la référence commande si fournie
+        if (!empty($validated['commande_id']) && empty($validated['type_reference'])) {
+            $validated['type_reference'] = 'commande_pharmaceutique';
+            $validated['reference_id'] = $validated['reference_id'] ?? $validated['commande_id'];
+        }
 
-        $payload = array_merge($validated, [
-            'payeur_id' => $payeurId,
-            'numero_paiement' => Paiement::generateNumero(),
-            'idempotence_key' => $validated['idempotence_key'] ?? $request->header('Idempotency-Key') ?? (string) Str::uuid(),
-            'reference_transaction' => $validated['reference_transaction'] ?? strtoupper(Str::random(14)),
-            'montant_devise_locale' => $validated['montant_devise_locale'] ?? round($validated['montant'] * ($validated['taux_change'] ?? 1), 2),
-            'montant_net' => $validated['montant_net'] ?? max($validated['montant'] - ($validated['frais_transaction'] ?? 0), 0),
-            'date_initiation' => now(),
-            'statut' => 'initie',
-        ]);
+        $result = $this->paymentService->createPayment(
+            $validated,
+            $request->header('Idempotency-Key'),
+            $request
+        );
 
-        $paiement = Paiement::create($payload);
+        $status = $result['created'] ? 201 : 200;
 
-        // Mettre à jour la facture
-        $facture->updateRemainingAmount();
-
-        return (new PaiementResource($paiement))
+        return (new PaiementResource($result['payment']))
             ->response()
-            ->setStatusCode(201);
+            ->setStatusCode($status);
     }
 
     /**
@@ -56,22 +71,13 @@ class PaiementController extends Controller
      */
     public function confirm(Request $request, Paiement $paiement): PaiementResource
     {
-        if ($paiement->statut === 'confirme') {
-            return new PaiementResource($paiement);
-        }
+        $updated = $this->paymentService->confirmPayment(
+            $paiement,
+            $request->all(),
+            $request->getContent(),
+            $request->header('X-Signature')
+        );
 
-        $paiement->update([
-            'statut' => 'confirme',
-            'date_confirmation' => now(),
-            'reference_passerelle' => $request->input('reference_passerelle', $paiement->reference_passerelle),
-            'code_autorisation' => $request->input('code_autorisation', $paiement->code_autorisation),
-            'reponse_passerelle' => $request->input('reponse_passerelle', $paiement->reponse_passerelle),
-        ]);
-
-        $paiement->facture?->updateRemainingAmount();
-
-        PaymentConfirmed::dispatch($paiement);
-
-        return new PaiementResource($paiement->fresh());
+        return new PaiementResource($updated);
     }
 }

@@ -30,6 +30,8 @@ class TeleconsultationSession extends Model
         'ended_at' => 'datetime',
         'token_expires_at' => 'datetime',
         'metadata' => 'array',
+        'patient_token' => 'encrypted',
+        'practitioner_token' => 'encrypted',
     ];
 
     public function consultation(): BelongsTo

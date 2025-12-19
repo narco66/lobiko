@@ -243,6 +243,9 @@
     </style>
 </head>
 <body>
+    @php
+        use Illuminate\Support\Facades\Gate;
+    @endphp
     <!-- Loading Spinner -->
     <div class="loading-spinner" id="loadingSpinner">
         <div class="spinner"></div>
@@ -266,22 +269,82 @@
                             Accueil
                         </a>
                     </li>
+                    @auth
+                        @php
+                            $canSeeBackend = auth()->user()?->hasAnyRole(['Super Admin', 'Admin', 'super-admin', 'admin']) || auth()->user()?->can('users.view') || Gate::check('viewAny', \App\Models\User::class);
+                        @endphp
+                        @if($canSeeBackend)
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                                    Backend / Admin
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                    <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="fas fa-gauge-high me-2"></i>Dashboard</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('users.index') }}"><i class="fas fa-users me-2"></i>Utilisateurs</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('dossiers-medicaux.index') }}"><i class="fas fa-notes-medical me-2"></i>Dossiers médicaux</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('consultations.index') }}"><i class="fas fa-stethoscope me-2"></i>Consultations</a></li>
+                                    @if(Route::has('admin.structures.index'))
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="{{ route('admin.structures.index') }}"><i class="fas fa-hospital me-2"></i>Structures</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('admin.doctors.index') }}"><i class="fas fa-user-md me-2"></i>Médecins</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('admin.specialties.index') }}"><i class="fas fa-sitemap me-2"></i>Spécialités</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('admin.services.index') }}"><i class="fas fa-layer-group me-2"></i>Services</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('partners') }}"><i class="fas fa-handshake me-2"></i>Partenaires</a></li>
+                                    @endif
+                                    @if(Route::has('admin.structures.index'))
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="{{ route('admin.structures.index') }}"><i class="fas fa-hospital me-2"></i>Structures</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('admin.doctors.index') }}"><i class="fas fa-user-md me-2"></i>Médecins</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('admin.specialties.index') }}"><i class="fas fa-sitemap me-2"></i>Spécialités</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('admin.services.index') }}"><i class="fas fa-layer-group me-2"></i>Services</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('admin.payments.index') }}"><i class="fas fa-credit-card me-2"></i>Paiements</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('teleconsultation.index') }}"><i class="fas fa-video me-2"></i>Téléconsultation</a></li>
+                                    @endif
+                                    @if(Route::has('admin.blog.posts.index') && auth()->check())
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item {{ request()->routeIs('admin.blog.posts.*') ? 'active' : '' }}" href="{{ route('admin.blog.posts.index') }}"><i class="fas fa-newspaper me-2"></i>Articles (Blog)</a></li>
+                                        <li><a class="dropdown-item {{ request()->routeIs('admin.blog.categories.*') ? 'active' : '' }}" href="{{ route('admin.blog.categories.index') }}"><i class="fas fa-folder-tree me-2"></i>Catégories</a></li>
+                                        <li><a class="dropdown-item {{ request()->routeIs('admin.blog.tags.*') ? 'active' : '' }}" href="{{ route('admin.blog.tags.index') }}"><i class="fas fa-tags me-2"></i>Tags</a></li>
+                                        <li><a class="dropdown-item {{ request()->routeIs('admin.blog.media.*') ? 'active' : '' }}" href="{{ route('admin.blog.media.index') }}"><i class="fas fa-photo-video me-2"></i>Médias</a></li>
+                                    @endif
+                                    @if(Route::has('ordonnances.index'))
+                                        <li><a class="dropdown-item" href="{{ route('ordonnances.index') }}"><i class="fas fa-file-prescription me-2"></i>Ordonnances</a></li>
+                                    @endif
+                                    @if(Route::has('factures.index'))
+                                        <li><a class="dropdown-item" href="{{ route('factures.index') }}"><i class="fas fa-file-invoice-dollar me-2"></i>Factures</a></li>
+                                    @endif
+                                </ul>
+                            </li>
+                        @else
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                                    Backend / Admin
+                                </a>
+                            </li>
+                        @endcan
+                    @endauth
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" role="button" data-bs-toggle="dropdown">
                             Services
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="servicesDropdown">
                             <li><a class="dropdown-item" href="{{ route('services.teleconsultation') }}">
-                                <i class="fas fa-video me-2"></i> Téléconsultation
+                                <i class="fas fa-video me-2"></i> T?l?consultation
                             </a></li>
                             <li><a class="dropdown-item" href="{{ route('appointments.create') }}">
-                                <i class="fas fa-calendar me-2"></i> Prise de rendez-vous
+                                <i class="fas fa-calendar me-2"></i> Planifier un rendez-vous
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ route('appointments.index') }}">
+                                <i class="fas fa-calendar-check me-2"></i> Mes rendez-vous
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ route('teleconsultation.index') }}">
+                                <i class="fas fa-video-camera me-2"></i> Mes t?l?consultations
                             </a></li>
                             <li><a class="dropdown-item" href="{{ route('services.pharmacy') }}">
                                 <i class="fas fa-pills me-2"></i> Pharmacie en ligne
                             </a></li>
                             <li><a class="dropdown-item" href="{{ route('services.insurance') }}">
-                                <i class="fas fa-shield-alt me-2"></i> Assurance santé
+                                <i class="fas fa-shield-alt me-2"></i> Assurance sant?
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ route('services') }}">
@@ -334,6 +397,9 @@
                                 <li><a class="dropdown-item" href="{{ route('appointments.index') }}">
                                     <i class="fas fa-calendar-check me-2"></i> Mes rendez-vous
                                 </a></li>
+                                <li><a class="dropdown-item" href="{{ route('teleconsultation.index') }}">
+                                    <i class="fas fa-video me-2"></i> Mes t?l?consultations
+                                </a></li>
                                 <li><a class="dropdown-item" href="{{ route('prescriptions.index') }}">
                                     <i class="fas fa-prescription me-2"></i> Mes ordonnances
                                 </a></li>
@@ -342,9 +408,12 @@
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
                                         <button type="submit" class="dropdown-item">
-                                            <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
+                                            <i class="fas fa-sign-out-alt me-2"></i> D?connexion
                                         </button>
                                     </form>
+                                    <a class="dropdown-item" href="{{ route('logout.get') }}">
+                                        <i class="fas fa-sign-out-alt me-2"></i> D?connexion (alternative)
+                                    </a>
                                 </li>
                             </ul>
                         </div>

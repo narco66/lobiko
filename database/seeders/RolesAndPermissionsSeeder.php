@@ -60,7 +60,7 @@ class RolesAndPermissionsSeeder extends Seeder
         foreach ($modules as $module => $actions) {
             foreach ($actions as $action) {
                 $permissionName = "{$module}.{$action}";
-                $permissions[$permissionName] = Permission::create(['name' => $permissionName]);
+                $permissions[$permissionName] = Permission::firstOrCreate(['name' => $permissionName]);
             }
         }
 
@@ -79,7 +79,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ];
 
         foreach ($specialPermissions as $permission) {
-            $permissions[$permission] = Permission::create(['name' => $permission]);
+            $permissions[$permission] = Permission::firstOrCreate(['name' => $permission]);
         }
 
         return $permissions;
@@ -90,13 +90,14 @@ class RolesAndPermissionsSeeder extends Seeder
      */
     private function createRoles(array $permissions): void
     {
-        // Super Admin - Toutes les permissions
-        $superAdmin = Role::create(['name' => 'super-admin']);
-        $superAdmin->givePermissionTo(Permission::all());
+        $sync = function (string $name, array $perms) {
+            $role = Role::firstOrCreate(['name' => $name]);
+            $role->syncPermissions($perms);
+        };
 
-        // Admin
-        $admin = Role::create(['name' => 'admin']);
-        $admin->givePermissionTo([
+        $sync('super-admin', Permission::all()->pluck('name')->toArray());
+
+        $sync('admin', [
             'dashboard.admin',
             'users.view', 'users.create', 'users.edit', 'users.verify',
             'structures.view', 'structures.create', 'structures.edit', 'structures.verify',
@@ -109,9 +110,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'evaluations.view', 'evaluations.moderate',
         ]);
 
-        // Médecin
-        $medecin = Role::create(['name' => 'medecin']);
-        $medecin->givePermissionTo([
+        $sync('medecin', [
             'dashboard.medical',
             'consultations.view', 'consultations.create', 'consultations.edit',
             'ordonnances.view', 'ordonnances.create', 'ordonnances.edit',
@@ -125,9 +124,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'notifications.view',
         ]);
 
-        // Pharmacien
-        $pharmacien = Role::create(['name' => 'pharmacien']);
-        $pharmacien->givePermissionTo([
+        $sync('pharmacien', [
             'dashboard.medical',
             'ordonnances.view', 'ordonnances.dispense',
             'stocks.view', 'stocks.create', 'stocks.edit', 'stocks.manage',
@@ -138,9 +135,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'notifications.view', 'notifications.create',
         ]);
 
-        // Infirmier
-        $infirmier = Role::create(['name' => 'infirmier']);
-        $infirmier->givePermissionTo([
+        $sync('infirmier', [
             'dashboard.medical',
             'consultations.view', 'consultations.create',
             'rendez-vous.view', 'rendez-vous.create',
@@ -149,9 +144,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'notifications.view',
         ]);
 
-        // Sage-femme
-        $sageFemme = Role::create(['name' => 'sage-femme']);
-        $sageFemme->givePermissionTo([
+        $sync('sage-femme', [
             'dashboard.medical',
             'consultations.view', 'consultations.create', 'consultations.edit',
             'ordonnances.view', 'ordonnances.create',
@@ -161,9 +154,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'emergency.access',
         ]);
 
-        // Dentiste
-        $dentiste = Role::create(['name' => 'dentiste']);
-        $dentiste->givePermissionTo([
+        $sync('dentiste', [
             'dashboard.medical',
             'consultations.view', 'consultations.create', 'consultations.edit',
             'ordonnances.view', 'ordonnances.create',
@@ -172,9 +163,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'factures.view', 'factures.create',
         ]);
 
-        // Biologiste
-        $biologiste = Role::create(['name' => 'biologiste']);
-        $biologiste->givePermissionTo([
+        $sync('biologiste', [
             'dashboard.medical',
             'consultations.view',
             'dossiers-medicaux.view', 'dossiers-medicaux.edit',
@@ -182,12 +171,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'rapports.view', 'rapports.create',
         ]);
 
-        // Patient
-        $patient = Role::create(['name' => 'patient']);
-        $patient->givePermissionTo([
+        $sync('patient', [
             'dashboard.patient',
-            'consultations.view', // Ses propres consultations
-            'ordonnances.view', // Ses propres ordonnances
+            'consultations.view',
+            'ordonnances.view',
             'rendez-vous.view', 'rendez-vous.create', 'rendez-vous.edit',
             'dossiers-medicaux.view', 'dossiers-medicaux.share',
             'factures.view',
@@ -199,91 +186,44 @@ class RolesAndPermissionsSeeder extends Seeder
             'litiges.create',
         ]);
 
-        // Gestionnaire de structure
-        $gestionnaire = Role::create(['name' => 'gestionnaire-structure']);
-        $gestionnaire->givePermissionTo([
-            'dashboard.admin',
-            'structures.view', 'structures.edit',
-            'users.view', 'users.create', 'users.edit', // Personnel de la structure
-            'consultations.view',
-            'factures.view',
-            'reversements.view',
-            'rapports.view', 'rapports.create', 'rapports.export',
-            'catalogues.view', 'catalogues.edit',
-            'evaluations.view',
-        ]);
-
-        // Comptable / Trésorier
-        $comptable = Role::create(['name' => 'comptable']);
-        $comptable->givePermissionTo([
+        $sync('assureur', [
             'dashboard.financial',
-            'factures.view', 'factures.edit', 'factures.validate',
-            'paiements.view', 'paiements.validate',
-            'reversements.view', 'reversements.create', 'reversements.validate',
-            'comptabilite.view', 'comptabilite.create', 'comptabilite.edit', 'comptabilite.validate',
-            'rapports.view', 'rapports.create', 'rapports.export',
-            'audit.view',
-        ]);
-
-        // Assureur
-        $assureur = Role::create(['name' => 'assureur']);
-        $assureur->givePermissionTo([
-            'dashboard.financial',
-            'pec.view', 'pec.edit', 'pec.approve',
-            'factures.view',
-            'assurances.view', 'assurances.edit', 'assurances.manage',
-            'rapports.view', 'rapports.export',
-            'litiges.view', 'litiges.edit',
-        ]);
-
-        // Administrateur assurance
-        $adminAssurance = Role::create(['name' => 'admin-assurance']);
-        $adminAssurance->givePermissionTo([
-            'dashboard.financial',
-            'pec.view', 'pec.create', 'pec.edit', 'pec.approve',
             'assurances.view', 'assurances.create', 'assurances.edit', 'assurances.manage',
-            'factures.view',
-            'paiements.view',
-            'rapports.view', 'rapports.create', 'rapports.export',
-            'litiges.view', 'litiges.edit', 'litiges.resolve',
+            'pec.view', 'pec.approve',
+            'factures.view', 'factures.validate',
+            'paiements.view', 'paiements.validate',
+            'reversements.view', 'reversements.validate',
+            'rapports.view', 'rapports.export',
         ]);
 
-        // Livreur
-        $livreur = Role::create(['name' => 'livreur']);
-        $livreur->givePermissionTo([
-            'commandes.view', 'commandes.edit',
-            'notifications.view',
+        $sync('comptable', [
+            'dashboard.financial',
+            'factures.view', 'factures.create', 'factures.edit', 'factures.validate',
+            'paiements.view', 'paiements.validate',
+            'reversements.view', 'reversements.validate',
+            'comptabilite.view', 'comptabilite.create', 'comptabilite.edit', 'comptabilite.validate',
+            'rapports.view', 'rapports.export',
         ]);
 
-        // Agent de caisse
-        $agent = Role::create(['name' => 'agent-caisse']);
-        $agent->givePermissionTo([
-            'paiements.view', 'paiements.create',
-            'factures.view',
-            'notifications.view',
-        ]);
-
-        // Modérateur
-        $moderateur = Role::create(['name' => 'moderateur']);
-        $moderateur->givePermissionTo([
-            'evaluations.view', 'evaluations.moderate',
-            'litiges.view', 'litiges.edit',
-            'notifications.view', 'notifications.create', 'notifications.send',
-            'audit.view',
-        ]);
-
-        // Praticien générique (profil médical sans spécialité précise)
-        $praticien = Role::create(['name' => 'praticien']);
-        $praticien->givePermissionTo([
+        $sync('livreur', [
             'dashboard.medical',
-            'consultations.view', 'consultations.create', 'consultations.edit',
-            'ordonnances.view', 'ordonnances.create',
-            'rendez-vous.view', 'rendez-vous.create', 'rendez-vous.edit',
+            'commandes.view',
+            'rendez-vous.view',
+            'paiements.view',
+        ]);
+
+        $sync('moderateur', [
+            'evaluations.view', 'evaluations.moderate',
+        ]);
+
+        $sync('praticien', [
+            'dashboard.medical',
+            'consultations.view', 'consultations.create',
+            'rendez-vous.view', 'rendez-vous.create',
             'dossiers-medicaux.view', 'dossiers-medicaux.edit',
-            'factures.view', 'factures.create',
-            'pec.view',
             'teleconsultation.start',
-            'notifications.view',
+            'rapports.view',
         ]);
     }
 }
+

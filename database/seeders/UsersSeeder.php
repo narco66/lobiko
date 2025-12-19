@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class UsersSeeder extends Seeder
 {
@@ -14,15 +15,19 @@ class UsersSeeder extends Seeder
      */
     public function run(): void
     {
+        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+
         // Super Admin
-        $superAdmin = User::create([
+        $superAdmin = User::updateOrCreate(
+            ['email' => 'superadmin@lobiko.com'],
+            [
             'matricule' => 'LBK-2025-00001',
             'nom' => 'ADMIN',
             'prenom' => 'Super',
             'date_naissance' => '1980-01-01',
             'sexe' => 'M',
             'telephone' => '+241011111111',
-            'email' => 'superadmin@lobiko.com',
             'email_verified_at' => now(),
             'password' => Hash::make('SuperAdmin@2025'),
             'adresse_rue' => 'Boulevard Triomphal',
@@ -35,17 +40,18 @@ class UsersSeeder extends Seeder
             'langue_preferee' => 'fr',
             'photo_profil' => 'avatars/admin.jpg',
         ]);
-        $superAdmin->assignRole('super-admin');
+        $superAdmin->syncRoles([$superAdminRole]);
 
         // Admin
-        $admin = User::create([
+        $admin = User::updateOrCreate(
+            ['email' => 'admin@lobiko.com'],
+            [
             'matricule' => 'LBK-2025-00002',
             'nom' => 'NZUE',
             'prenom' => 'Jean',
             'date_naissance' => '1985-03-15',
             'sexe' => 'M',
             'telephone' => '+241011111112',
-            'email' => 'admin@lobiko.com',
             'email_verified_at' => now(),
             'password' => Hash::make('Admin@2025'),
             'adresse_rue' => 'Avenue du Colonel Parant',
@@ -57,7 +63,7 @@ class UsersSeeder extends Seeder
             'statut_compte' => 'actif',
             'langue_preferee' => 'fr',
         ]);
-        $admin->assignRole('admin');
+        $admin->syncRoles([$adminRole]);
 
         // Médecins
         $medecins = [

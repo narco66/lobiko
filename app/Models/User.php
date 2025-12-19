@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -61,7 +62,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'last_login_ip',
         'note_moyenne',
         'nombre_evaluations',
-        'api_token'
+        'api_token',
     ];
 
     /**
@@ -89,6 +90,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'date_naissance' => 'date',
         'certification_verified' => 'boolean',
         'two_factor_enabled' => 'boolean',
+        'two_factor_secret' => 'encrypted',
+        'two_factor_recovery_codes' => 'encrypted',
         'notifications_sms' => 'boolean',
         'notifications_email' => 'boolean',
         'notifications_push' => 'boolean',
@@ -96,6 +99,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'longitude' => 'decimal:8',
         'note_moyenne' => 'decimal:2',
     ];
+
+    /**
+     * Virtual attributes.
+     */
+    protected $appends = ['name'];
 
     /**
      * Boot method
@@ -137,6 +145,23 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getAgeAttribute(): int
     {
         return $this->date_naissance ? $this->date_naissance->age : 0;
+    }
+
+    /**
+     * Adapter l'attribut virtuel "name" sur prenom/nom.
+     */
+    protected function name(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => trim(($this->prenom ?? '') . ' ' . ($this->nom ?? '')),
+            set: function ($value) {
+                $parts = preg_split('/\s+/', trim((string) $value), 2);
+                return [
+                    'prenom' => $parts[0] ?? '',
+                    'nom' => $parts[1] ?? '',
+                ];
+            }
+        );
     }
 
     /**
@@ -547,6 +572,9 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function scopeNearby($query, $latitude, $longitude, $radius = 10)
     {
+        $lat = (float) $latitude;
+        $lon = (float) $longitude;
+        $rad = (float) $radius;
         $haversine = "(6371 * acos(cos(radians($latitude))
             * cos(radians(latitude))
             * cos(radians(longitude) - radians($longitude))
@@ -555,7 +583,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
         return $query->select('*')
             ->selectRaw("{$haversine} AS distance")
-            ->whereRaw("{$haversine} < ?", [$radius])
+            ->whereRaw("{$haversine} < ?", [$rad])
             ->orderBy('distance');
     }
 

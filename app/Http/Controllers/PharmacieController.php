@@ -48,15 +48,17 @@ class PharmacieController extends Controller
 
         // Recherche par proximité
         if ($request->filled('latitude') && $request->filled('longitude')) {
-            $latitude = $request->latitude;
-            $longitude = $request->longitude;
-            $rayon = $request->rayon ?? 10; // Rayon par défaut de 10 km
+            $latitude = (float) $request->latitude;
+            $longitude = (float) $request->longitude;
+            $rayon = (float) ($request->rayon ?? 10); // Rayon par défaut de 10 km
 
-            $query->selectRaw("*,
-                (6371 * acos(cos(radians(?)) * cos(radians(latitude)) *
-                cos(radians(longitude) - radians(?)) + sin(radians(?)) *
-                sin(radians(latitude)))) AS distance",
-                [$latitude, $longitude, $latitude])
+            $query->select('*')
+                ->selectRaw(
+                    '(6371 * acos(cos(radians(?)) * cos(radians(latitude)) *
+                    cos(radians(longitude) - radians(?)) + sin(radians(?)) *
+                    sin(radians(latitude)))) AS distance',
+                    [$latitude, $longitude, $latitude]
+                )
                 ->having('distance', '<=', $rayon)
                 ->orderBy('distance');
         }

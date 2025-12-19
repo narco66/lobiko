@@ -1,3 +1,7 @@
+@php
+    use Illuminate\Support\Facades\Gate;
+@endphp
+
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -11,10 +15,35 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <div class="hidden space-x-4 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
+                        <i class="fas fa-gauge-high me-1" aria-hidden="true"></i> {{ __('Dashboard') }}
                     </x-nav-link>
+                    @canany(['view dossiers_medicaux', 'viewAny', 'super-admin', 'admin', 'medecin'])
+                        <x-nav-link :href="route('dossiers-medicaux.index')" :active="request()->routeIs('dossiers-medicaux.*')">
+                            <i class="fas fa-notes-medical me-1" aria-hidden="true"></i> Dossiers medicaux
+                        </x-nav-link>
+                    @endcanany
+                    @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\User::class) || auth()->user()?->can('users.view'))
+                        <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                            <i class="fas fa-users me-1" aria-hidden="true"></i> Utilisateurs
+                        </x-nav-link>
+                    @endif
+                    @canany(['view consultations', 'super-admin', 'admin', 'medecin'])
+                        <x-nav-link :href="route('consultations.index')" :active="request()->routeIs('consultations.*')">
+                            <i class="fas fa-stethoscope me-1" aria-hidden="true"></i> Consultations
+                        </x-nav-link>
+                    @endcanany
+                    @canany(['view ordonnances', 'super-admin', 'admin', 'medecin', 'pharmacien'])
+                        <x-nav-link :href="route('ordonnances.index')" :active="request()->routeIs('ordonnances.*')">
+                            <i class="fas fa-file-prescription me-1" aria-hidden="true"></i> Ordonnances
+                        </x-nav-link>
+                    @endcanany
+                    @canany(['view factures', 'super-admin', 'admin', 'comptable'])
+                        <x-nav-link :href="route('factures.index')" :active="request()->routeIs('factures.*')">
+                            <i class="fas fa-file-invoice-dollar me-1" aria-hidden="true"></i> Facturation
+                        </x-nav-link>
+                    @endcanany
                 </div>
             </div>
 
@@ -72,6 +101,31 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            @canany(['view dossiers_medicaux', 'viewAny', 'super-admin', 'admin', 'medecin'])
+                <x-responsive-nav-link :href="route('dossiers-medicaux.index')" :active="request()->routeIs('dossiers-medicaux.*')">
+                    Dossiers medicaux
+                </x-responsive-nav-link>
+            @endcanany
+            @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\User::class) || auth()->user()?->can('users.view'))
+                <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                    Utilisateurs
+                </x-responsive-nav-link>
+            @endif
+            @canany(['view consultations', 'super-admin', 'admin', 'medecin'])
+                <x-responsive-nav-link :href="route('consultations.index')" :active="request()->routeIs('consultations.*')">
+                    Consultations
+                </x-responsive-nav-link>
+            @endcanany
+            @canany(['view ordonnances', 'super-admin', 'admin', 'medecin', 'pharmacien'])
+                <x-responsive-nav-link :href="route('ordonnances.index')" :active="request()->routeIs('ordonnances.*')">
+                    Ordonnances
+                </x-responsive-nav-link>
+            @endcanany
+            @canany(['view factures', 'super-admin', 'admin', 'comptable'])
+                <x-responsive-nav-link :href="route('factures.index')" :active="request()->routeIs('factures.*')">
+                    Facturation
+                </x-responsive-nav-link>
+            @endcanany
         </div>
 
         <!-- Responsive Settings Options -->

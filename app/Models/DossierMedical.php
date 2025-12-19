@@ -20,6 +20,13 @@ class DossierMedical extends Model
         'imc',
         'derniere_consultation',
         'nombre_consultations',
+        'allergies',
+        'antecedents',
+        'traitements_en_cours',
+        'vaccinations',
+        'historique_familial',
+        'habitudes_vie',
+        'notes_privees',
     ];
 
     protected $casts = [
@@ -30,6 +37,13 @@ class DossierMedical extends Model
         'taille_cm' => 'decimal:2',
         'imc' => 'decimal:2',
         'nombre_consultations' => 'integer',
+        'allergies' => 'encrypted:array',
+        'antecedents' => 'encrypted:array',
+        'traitements_en_cours' => 'encrypted:array',
+        'vaccinations' => 'encrypted:array',
+        'historique_familial' => 'encrypted:array',
+        'habitudes_vie' => 'encrypted:array',
+        'notes_privees' => 'encrypted',
     ];
 
     public function patient(): BelongsTo

@@ -13,21 +13,33 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Désactiver temporairement les contraintes de clés étrangères
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        if (app()->environment('testing')) {
+            $this->call(TestsBaseSeeder::class);
+            return;
+        }
 
-        // Nettoyer les tables existantes
-        $this->cleanDatabase();
+        $shouldClean = (bool) env('SEED_CLEAN_DATABASE', false);
+        $isSafeEnv = app()->environment(['local', 'development']);
+
+        if ($shouldClean && $isSafeEnv) {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            $this->cleanDatabase();
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
 
         // Seeders dans l'ordre de dépendance
         $this->call([
             // 1. Données de référence et configuration
             RolesAndPermissionsSeeder::class,
             PlanComptableSeeder::class,
+            MedicalReferentialsSeeder::class,
 
             // 2. Utilisateurs et structures
             UsersSeeder::class,
             StructuresMedicalesSeeder::class,
+
+            // Compte admin dédié
+            AdminSeeder::class,
 
             // 3. Catalogues et tarifs
             ActesMedicauxSeeder::class,
@@ -51,9 +63,6 @@ class DatabaseSeeder extends Seeder
             // 6. Contenus marketing / front-office
             MarketingSeeder::class,
         ]);
-
-        // Réactiver les contraintes de clés étrangères
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $this->command->info('Base de données initialisée avec succès!');
         $this->displayCredentials();

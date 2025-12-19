@@ -26,13 +26,22 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $data = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if (isset($data['name'])) {
+            $user->name = $data['name']; // mutateur met à jour prénom/nom
         }
 
-        $request->user()->save();
+        if (isset($data['email']) && $user->email !== $data['email']) {
+            $user->email = $data['email'];
+            $user->email_verified_at = null;
+        }
+
+        // Écarter le champ virtuel pour éviter toute tentative de persistance
+        unset($data['name']);
+        $user->fill($data);
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
@@ -50,7 +59,7 @@ class ProfileController extends Controller
 
         Auth::logout();
 
-        $user->delete();
+        $user->forceDelete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
