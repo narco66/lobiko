@@ -415,25 +415,35 @@
 @endif
 
 <!-- Partners Section -->
-<section class="partners py-5">
+<section class="partners py-5" id="partners">
     <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-4 fw-bold mb-3">Nos Partenaires</h2>
-            <p class="lead text-muted">Ils nous font confiance</p>
+        <div class="text-center mb-4">
+            <p class="text-uppercase text-primary fw-semibold small mb-2">Partenaires</p>
+            <h2 class="display-5 fw-bold mb-2">Ils renforcent le parcours de soins</h2>
+            <p class="lead text-muted mb-0">Structures, pharmacies, assureurs et acteurs tech engagés à nos côtés.</p>
         </div>
 
-        <div class="partners-slider">
-            <div class="row align-items-center justify-content-center g-5">
-                @foreach($partners as $partner)
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="partner-logo text-center">
+        <div class="row g-4 align-items-stretch">
+            @foreach($partners as $partner)
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="h-100 p-3 border rounded text-center shadow-sm bg-white partner-card">
                         <img src="{{ asset('images/partners/' . $partner['logo']) }}"
                              alt="{{ $partner['name'] }}"
-                             class="img-fluid grayscale hover-color" style="max-height: 80px;">
+                             class="img-fluid mb-3 grayscale hover-color" style="max-height: 80px;">
+                        <h6 class="fw-semibold mb-1">{{ $partner['name'] }}</h6>
+                        @if(!empty($partner['sector']))
+                            <p class="text-muted small mb-2">{{ $partner['sector'] }}</p>
+                        @endif
+                        <span class="badge bg-primary-subtle text-primary small">Partenaire</span>
                     </div>
                 </div>
-                @endforeach
-            </div>
+            @endforeach
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ route('partners') }}" class="btn btn-outline-primary rounded-pill px-4">
+                Devenir partenaire
+            </a>
         </div>
     </div>
 </section>

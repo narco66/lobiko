@@ -33,7 +33,7 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'phone' => ['nullable', 'string', 'max:50'],
+            'phone' => ['required', 'string', 'max:50', 'unique:users,telephone'],
         ]);
 
         // Adapter au modèle User qui attend nom/prenom
@@ -48,7 +48,7 @@ class RegisteredUserController extends Controller
             'prenom' => $prenom,
             'date_naissance' => now()->subYears(30)->toDateString(),
             'sexe' => 'M',
-            'telephone' => $request->phone ?? '0000000000',
+            'telephone' => $request->phone,
             'adresse_ville' => 'Libreville',
             'adresse_pays' => 'Gabon',
             'email' => $request->email,

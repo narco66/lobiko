@@ -64,6 +64,7 @@
                     </div>
                     <p class="text-muted">
                         Spécialité, motif, durée, lieu (cabinet, clinique, domicile, visio) pour orienter le patient au bon endroit.
+                        Le formulaire capte désormais la modalité et le lieu précis pour aiguiller vers la bonne structure.
                     </p>
                 </div>
             </div>

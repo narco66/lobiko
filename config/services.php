@@ -17,4 +17,8 @@ return [
             'from' => env('TWILIO_SMS_FROM'),
         ],
     ],
+
+    'google' => [
+        'maps_key' => env('GOOGLE_MAPS_KEY'),
+    ],
 ];

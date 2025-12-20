@@ -11,10 +11,10 @@ class MedicalStructureStoreRequest extends FormRequest
         return $this->user()?->can('structures.create') ?? false;
     }
 
-    public function rules(): array
+   public function rules(): array
     {
         return [
-            'code_structure' => ['required', 'string', 'max:50', 'unique:structures_medicales,code_structure'],
+            'code_structure' => ['nullable', 'string', 'max:50', 'unique:structures_medicales,code_structure'],
             'nom_structure' => ['required', 'string', 'max:255'],
             'type_structure' => ['required', 'in:cabinet,clinique,hopital,pharmacie,laboratoire,centre_imagerie,centre_specialise'],
             'adresse_rue' => ['required', 'string', 'max:255'],
@@ -32,4 +32,5 @@ class MedicalStructureStoreRequest extends FormRequest
             'responsable_id' => ['required', 'uuid', 'exists:users,id'],
         ];
     }
+
 }

@@ -26,4 +26,9 @@ class UserPolicy
     {
         return $this->viewAny($user);
     }
+
+    public function delete(User $user, User $model): bool
+    {
+        return $this->viewAny($user);
+    }
 }

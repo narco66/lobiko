@@ -25,19 +25,28 @@
 @endphp
 
 <div class="container py-5">
-    <div class="row align-items-start g-4">
-        <div class="col-lg-7">
-            <div class="mb-4">
-                <p class="text-uppercase text-primary fw-semibold small mb-1">Contact</p>
-                <h1 class="h3 fw-bold mb-2">Écrivez-nous, nous répondons rapidement</h1>
-                <p class="text-muted mb-0">Un conseiller vous répondra par email ou téléphone pour orienter votre demande.</p>
-            </div>
+    <x-lobiko.page-header
+        title="Contact"
+        subtitle="Support, rendez-vous, pharmacie, assurance ou partenariat : nous vous repondons sous 24h"
+        :breadcrumbs="[['label' => 'Accueil', 'href' => route('home')], ['label' => 'Contact']]"
+    />
 
-            <div class="card shadow-sm border-0">
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-body p-4">
+                    <div class="d-flex align-items-start justify-content-between mb-3">
+                        <div>
+                            <p class="text-uppercase text-primary fw-semibold small mb-1">Formulaire</p>
+                            <h2 class="h5 fw-bold mb-0">Ecrivez-nous</h2>
+                        </div>
+                        <span class="badge bg-primary-subtle text-primary">Reponse < 24h</span>
+                    </div>
+
                     @if(session('success'))
                         <div class="alert alert-success">{{ session('success') }}</div>
                     @endif
+
                     <form method="POST" action="{{ route('contact.submit') }}" class="row g-3">
                         @csrf
                         <div class="col-md-6">
@@ -51,7 +60,7 @@
                             @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Téléphone (optionnel)</label>
+                            <label class="form-label">Telephone (optionnel)</label>
                             <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone') }}">
                             @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
@@ -62,12 +71,12 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">Message</label>
-                            <textarea name="message" rows="4" class="form-control @error('message') is-invalid @enderror" placeholder="Précisez votre besoin (téléconsultation, rendez-vous, support, partenariat)..." required>{{ old('message') }}</textarea>
+                            <textarea name="message" rows="4" class="form-control @error('message') is-invalid @enderror" placeholder="Precisez votre besoin (teleconsultation, rendez-vous, support, partenariat)..." required>{{ old('message') }}</textarea>
                             @error('message') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-12 d-flex justify-content-end">
                             <button type="submit" class="btn btn-gradient">
-                                <i class="fas fa-paper-plane me-2"></i> Envoyer
+                                <i class="fas fa-paper-plane me-2" aria-hidden="true"></i> Envoyer
                             </button>
                         </div>
                     </form>
@@ -78,18 +87,33 @@
         <div class="col-lg-5">
             <div class="card shadow-sm border-0 mb-3">
                 <div class="card-body">
-                    <h5 class="fw-bold mb-3">Nos bureaux</h5>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 class="fw-bold mb-0">Canaux rapides</h6>
+                        <span class="badge bg-light text-body">Support</span>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                        <a class="btn btn-primary" href="mailto:support@lobiko.example"><i class="fas fa-envelope-open-text me-2" aria-hidden="true"></i>support@lobiko.example</a>
+                        <a class="btn btn-outline-primary" href="tel:+24177790654"><i class="fas fa-phone me-2" aria-hidden="true"></i>+241 77 79 06 54</a>
+                        <a class="btn btn-outline-secondary" href="{{ route('services.emergency.request') }}"><i class="fas fa-ambulance me-2" aria-hidden="true"></i>Urgence</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-2">Nos bureaux</h6>
                     @foreach($offices as $office)
                         <div class="d-flex align-items-start mb-3">
-                            <div class="me-3 text-primary">
-                                <i class="fas fa-map-marker-alt"></i>
-                            </div>
+                            <div class="me-3 text-primary"><i class="fas fa-map-marker-alt" aria-hidden="true"></i></div>
                             <div>
-                                <h6 class="mb-1">{{ $office['city'] }}, {{ $office['country'] }} @if($office['is_headquarters']) <span class="badge bg-primary">Siège</span>@endif</h6>
-                                <p class="text-muted mb-1">{{ $office['address'] }}</p>
-                                <p class="mb-0">
-                                    <i class="fas fa-phone me-2"></i>{{ $office['phone'] }}<br>
-                                    <i class="fas fa-envelope me-2"></i>{{ $office['email'] }}
+                                <h6 class="mb-1">
+                                    {{ $office['city'] }}, {{ $office['country'] }}
+                                    @if($office['is_headquarters']) <span class="badge bg-primary">Siege</span> @endif
+                                </h6>
+                                <p class="text-muted small mb-1">{{ $office['address'] }}</p>
+                                <p class="mb-0 small">
+                                    <i class="fas fa-phone me-2" aria-hidden="true"></i>{{ $office['phone'] }}<br>
+                                    <i class="fas fa-envelope me-2" aria-hidden="true"></i>{{ $office['email'] }}
                                 </p>
                             </div>
                         </div>
@@ -99,12 +123,24 @@
 
             <div class="card shadow-sm border-0">
                 <div class="card-body">
-                    <h6 class="fw-bold mb-2">Assistance 24/7</h6>
-                    <p class="text-muted mb-2">Téléconsultation, rendez-vous, pharmacie, assurance et urgences.</p>
+                    <h6 class="fw-bold mb-2">Liens utiles</h6>
                     <div class="d-flex flex-column gap-2">
-                        <a href="{{ route('services.teleconsultation') }}" class="btn btn-outline-primary"><i class="fas fa-video me-2"></i> Téléconsultation</a>
-                        <a href="{{ route('appointments.create') }}" class="btn btn-outline-success"><i class="fas fa-calendar-plus me-2"></i> Prendre rendez-vous</a>
-                        <a href="{{ route('services.emergency.request') }}" class="btn btn-outline-danger"><i class="fas fa-ambulance me-2"></i> Urgence</a>
+                        <a href="{{ route('appointments.index') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-calendar-check me-2" aria-hidden="true"></i>Mes rendez-vous</span>
+                            <i class="fas fa-arrow-right text-muted" aria-hidden="true"></i>
+                        </a>
+                        <a href="{{ route('commandes-pharma.index') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-pills me-2" aria-hidden="true"></i>Commandes pharma</span>
+                            <i class="fas fa-arrow-right text-muted" aria-hidden="true"></i>
+                        </a>
+                        <a href="{{ route('admin.assurances.index') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-shield-alt me-2" aria-hidden="true"></i>Assurance</span>
+                            <i class="fas fa-arrow-right text-muted" aria-hidden="true"></i>
+                        </a>
+                        <a href="{{ route('admin.factures.index') }}" class="text-decoration-none d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-file-invoice-dollar me-2" aria-hidden="true"></i>Factures</span>
+                            <i class="fas fa-arrow-right text-muted" aria-hidden="true"></i>
+                        </a>
                     </div>
                 </div>
             </div>

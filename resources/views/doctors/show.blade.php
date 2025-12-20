@@ -2,23 +2,56 @@
 @section('title', $doctor->full_name)
 @section('content')
 <div class="container py-4">
-    <x-lobiko.page-header title="{{ $doctor->full_name }}" subtitle="Fiche médecin" />
+    <x-lobiko.page-header
+        title="{{ $doctor->full_name }}"
+        subtitle="Fiche médecin"
+        :breadcrumbs="[
+            ['label' => 'Dashboard', 'href' => route('dashboard')],
+            ['label' => 'Médecins', 'href' => route('admin.doctors.index')],
+            ['label' => $doctor->full_name]
+        ]"
+        :actions="[
+            ['type' => 'secondary', 'url' => route('admin.doctors.edit', $doctor), 'label' => 'Modifier', 'icon' => 'pen']
+        ]"
+    />
     <x-lobiko.ui.flash />
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card mb-3">
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="fas fa-user-md me-2"></i>Profil</h6>
+                </div>
                 <div class="card-body">
-                    <p><strong>Matricule :</strong> {{ $doctor->matricule }}</p>
-                    <p><strong>Spécialités :</strong> {{ $doctor->specialties->pluck('libelle')->join(', ') ?: '—' }}</p>
-                    <p><strong>Statut :</strong> <x-lobiko.ui.badge-status :status="$doctor->statut" /></p>
-                    <p><strong>Structures :</strong> {{ $doctor->structures->pluck('nom_structure')->join(', ') ?: '—' }}</p>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Matricule :</strong> {{ $doctor->matricule }}</p>
+                            <p class="mb-1"><strong>Nom :</strong> {{ $doctor->full_name }}</p>
+                            <p class="mb-1"><strong>Statut :</strong> <x-lobiko.ui.badge-status :status="$doctor->statut" /></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Email :</strong> {{ $doctor->email ?? '-' }}</p>
+                            <p class="mb-1"><strong>Téléphone :</strong> {{ $doctor->telephone ?? '-' }}</p>
+                            <p class="mb-1"><strong>Utilisateur lié :</strong> {{ $doctor->user_id ?? '-' }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Spécialité principale :</strong> {{ $doctor->specialty?->libelle ?? '-' }}</p>
+                            <p class="mb-0"><strong>Spécialités :</strong> {{ $doctor->specialties->pluck('libelle')->join(', ') ?: '-' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-0"><strong>Structures :</strong> {{ $doctor->structures->pluck('nom_structure')->join(', ') ?: '-' }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card mb-3">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="fas fa-calendar-plus me-2"></i>Ajouter un créneau</h6>
+                </div>
                 <div class="card-body">
-                    <h6>Ajouter un créneau</h6>
                     <form method="POST" action="{{ route('admin.doctor-schedules.store') }}" class="row g-2">
                         @csrf
                         <input type="hidden" name="doctor_id" value="{{ $doctor->id }}">
@@ -41,9 +74,11 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-clock me-2"></i>Créneaux</h6>
+                </div>
                 <div class="card-body">
-                    <h6>Créneaux</h6>
                     <ul class="list-group">
                         @forelse($doctor->schedules as $schedule)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -63,14 +98,16 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card mb-3">
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-warning">
+                    <h6 class="mb-0 text-dark"><i class="fas fa-info-circle me-2"></i>Actions</h6>
+                </div>
                 <div class="card-body">
-                    <h6>Actions</h6>
-                    <a href="{{ route('admin.doctors.edit', $doctor) }}" class="btn btn-primary w-100 mb-2">Modifier</a>
+                    <a href="{{ route('admin.doctors.edit', $doctor) }}" class="btn btn-primary w-100 mb-2"><i class="fas fa-edit me-1"></i>Modifier</a>
                     <form action="{{ route('admin.doctors.destroy', $doctor) }}" method="POST" onsubmit="return confirm('Supprimer ?');">
                         @csrf @method('DELETE')
-                        <button class="btn btn-outline-danger w-100">Supprimer</button>
+                        <button class="btn btn-outline-danger w-100"><i class="fas fa-trash me-1"></i>Supprimer</button>
                     </form>
                 </div>
             </div>

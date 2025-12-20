@@ -19,10 +19,21 @@ class DoctorController extends Controller
     public function index()
     {
         Gate::authorize('viewAny', Doctor::class);
-        $doctors = Doctor::with(['specialty'])->orderBy('nom')->paginate(15);
-        return view('doctors.index', [
-            'doctors' => $doctors,
-        ]);
+        $doctors = Doctor::with(['specialty', 'specialties', 'structures'])
+            ->when(request('search'), function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nom', 'like', "%{$search}%")
+                        ->orWhere('prenom', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('telephone', 'like', "%{$search}%")
+                        ->orWhere('matricule', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('nom')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('doctors.index', compact('doctors'));
     }
 
     public function create()
@@ -57,7 +68,7 @@ class DoctorController extends Controller
     public function show(Doctor $doctor)
     {
         Gate::authorize('view', $doctor);
-        $doctor->load(['user', 'specialties', 'structures']);
+        $doctor->load(['user', 'specialties', 'structures', 'schedules']);
         return view('doctors.show', compact('doctor'));
     }
 

@@ -127,7 +127,7 @@ class OrdonnanceController extends Controller
         }
 
         $patients = User::role('patient')->get();
-        $produits = ProduitPharmaceutique::where('stock_disponible', '>', 0)
+        $produits = ProduitPharmaceutique::where('disponible', true)
                                          ->orderBy('nom_commercial')
                                          ->get();
 
@@ -248,7 +248,7 @@ class OrdonnanceController extends Controller
         }
 
         $patients = User::role('patient')->get();
-        $produits = ProduitPharmaceutique::where('stock_disponible', '>', 0)
+        $produits = ProduitPharmaceutique::where('disponible', true)
                                          ->orderBy('nom_commercial')
                                          ->get();
 

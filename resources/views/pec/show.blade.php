@@ -203,7 +203,7 @@
                 <div class="card-body">
                     <div class="list-group">
                         @if($pec->devis)
-                        <a href="{{ route('devis.show', $pec->devis) }}" class="list-group-item list-group-item-action">
+                        <a href="{{ route('admin.devis.show', $pec->devis) }}" class="list-group-item list-group-item-action">
                             <div class="d-flex w-100 justify-content-between">
                                 <h6 class="mb-1">
                                     <i class="fas fa-file-invoice"></i> Devis #{{ $pec->devis->numero_devis }}
@@ -216,7 +216,7 @@
                         @endif
 
                         @if($pec->facture)
-                        <a href="{{ route('factures.show', $pec->facture) }}" class="list-group-item list-group-item-action">
+                        <a href="{{ route('admin.factures.show', $pec->facture) }}" class="list-group-item list-group-item-action">
                             <div class="d-flex w-100 justify-content-between">
                                 <h6 class="mb-1">
                                     <i class="fas fa-file-invoice-dollar"></i> Facture #{{ $pec->facture->numero_facture }}
@@ -314,7 +314,7 @@
 
                         @if($pec->statut == 'acceptee' && !$pec->facture)
                         <div class="col-md-6 mb-3">
-                            <a href="{{ route('factures.create', ['pec_id' => $pec->id]) }}"
+                            <a href="{{ route('admin.factures.create', ['pec_id' => $pec->id]) }}"
                                class="btn btn-info btn-block">
                                 <i class="fas fa-file-invoice-dollar"></i> Créer une facture
                             </a>

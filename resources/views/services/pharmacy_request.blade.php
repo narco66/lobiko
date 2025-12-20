@@ -13,7 +13,7 @@
             </div>
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
-                    <form method="POST" action="{{ route('services.pharmacy.request.submit') }}" class="row g-3">
+                    <form method="POST" action="{{ route('services.pharmacy.request.submit') }}" class="row g-3" enctype="multipart/form-data">
                         @csrf
                         <div class="col-md-6">
                             <label class="form-label">Nom complet</label>
@@ -53,6 +53,12 @@
                             <label class="form-label">Notes</label>
                             <textarea name="notes" class="form-control @error('notes') is-invalid @enderror" rows="3" placeholder="Produits spécifiques, créneau souhaité...">{{ old('notes') }}</textarea>
                             @error('notes') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Pièces jointes (ordonnance, prise en charge, carte d’assuré…)</label>
+                            <input type="file" name="attachments[]" class="form-control @error('attachments.*') is-invalid @enderror" multiple>
+                            <div class="form-text">Formats acceptés : PDF, images. Max 4 Mo par fichier.</div>
+                            @error('attachments.*') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-12 d-flex justify-content-end">
                             <a href="{{ route('services.pharmacy') }}" class="btn btn-outline-secondary me-2">Retour</a>

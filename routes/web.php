@@ -32,32 +32,13 @@ Route::prefix('partners')->group(function () {
         Route::delete('/{partner}', [\App\Http\Controllers\PartnerController::class, 'destroy'])->name('partners.destroy');
     });
 });
-Route::get('/press', fn () => view('pages.placeholder', [
-    'title' => 'Presse',
-    'section' => 'Presse',
-    'message' => 'Kit média et communiqués à venir.'
-]))->name('press');
+Route::get('/press', fn () => view('pages.press'))->name('press');
 Route::get('/faq', [\App\Http\Controllers\FaqController::class, 'index'])->name('faq');
-Route::get('/help', fn () => view('pages.placeholder', [
-    'title' => 'Centre d’aide',
-    'section' => 'Support',
-    'message' => 'Centre d’aide en cours de construction.'
-]))->name('help');
-Route::get('/privacy', fn () => view('pages.placeholder', [
-    'title' => 'Confidentialité',
-    'section' => 'Légal',
-    'message' => 'Politique de confidentialité en cours de finalisation.'
-]))->name('privacy');
-Route::get('/terms', fn () => view('pages.placeholder', [
-    'title' => 'Conditions Générales',
-    'section' => 'Légal',
-    'message' => 'CGU en cours de finalisation.'
-]))->name('terms');
-Route::get('/blog', fn () => view('pages.placeholder', [
-    'title' => 'Blog',
-    'section' => 'Blog',
-    'message' => 'Les articles seront publiés prochainement.'
-]))->name('blog.index');
+Route::get('/help', fn () => view('pages.help'))->name('help');
+Route::get('/privacy', fn () => view('pages.privacy'))->name('privacy');
+Route::get('/terms', fn () => view('pages.terms'))->name('terms');
+Route::get('/visa', fn () => view('pages.visa'))->name('visa');
+Route::get('/blog', fn () => view('pages.blog.index'))->name('blog.index');
 Route::get('/blog/{slug}', fn ($slug) => view('pages.placeholder', [
     'title' => 'Article',
     'section' => 'Blog',
@@ -87,9 +68,8 @@ Route::get('/services/emergency/request', [PublicServiceRequestController::class
 Route::post('/services/emergency/request', [PublicServiceRequestController::class, 'storeEmergency'])->name('services.emergency.request.submit');
 
 // Rendez-vous (flux public minimal)
-Route::get('/appointments', [\App\Http\Controllers\RendezVousController::class, 'index'])->name('appointments.index');
-Route::get('/appointments/create', [\App\Http\Controllers\RendezVousController::class, 'create'])->name('appointments.create');
-Route::post('/appointments', [\App\Http\Controllers\RendezVousController::class, 'store'])->name('appointments.store');
+Route::resource('appointments', \App\Http\Controllers\RendezVousController::class);
+Route::post('/appointments-request', [\App\Http\Controllers\RendezVousController::class, 'storeRequest'])->name('appointments.request');
 Route::get('/appointments/thanks', [\App\Http\Controllers\RendezVousController::class, 'thanks'])->name('appointments.thanks');
 
 // Placeholders publics pour d'autres liens du header
@@ -108,20 +88,34 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/requests/export', [ServiceRequestAdminController::class, 'export'])->name('requests.export');
     Route::post('/requests/status', [RequestStatusController::class, 'update'])->name('requests.status');
 
+    // Laboratoires (CRUD simple)
+    Route::resource('laboratoires', \App\Http\Controllers\LaboratoireController::class);
+
     Route::resource('structures', \App\Http\Controllers\MedicalStructureController::class);
     Route::resource('doctors', \App\Http\Controllers\DoctorController::class);
+    Route::resource('assurances', \App\Http\Controllers\AssuranceController::class);
+    Route::resource('pharmacies', \App\Http\Controllers\PharmacieController::class);
+    Route::get('pharmacies/{pharmacie}/stocks', [PharmacieController::class, 'stocks'])->name('pharmacies.stocks');
+    Route::get('pharmacies/{pharmacie}/mouvements-stock', [PharmacieController::class, 'mouvementsStock'])->name('pharmacies.mouvements-stock');
+    Route::get('pharmacies/{pharmacie}/dashboard', [PharmacieController::class, 'dashboard'])->name('pharmacies.dashboard');
+    Route::resource('produits-pharmaceutiques', \App\Http\Controllers\ProduitPharmaceutiqueController::class);
+    Route::resource('fournisseurs-pharmaceutiques', \App\Http\Controllers\FournisseurPharmaceutiqueController::class);
+    Route::resource('actes-medicaux', \App\Http\Controllers\ActeMedicalController::class);
+    Route::resource('forfaits', \App\Http\Controllers\ForfaitController::class);
+    Route::resource('devis', \App\Http\Controllers\DevisController::class);
+    Route::get('payments', [\App\Http\Controllers\PaymentWebController::class, 'index'])->name('payments.index');
+    Route::resource('factures', \App\Http\Controllers\FactureController::class);
     Route::resource('specialties', \App\Http\Controllers\SpecialtyController::class)->except(['show']);
     Route::resource('services', \App\Http\Controllers\MedicalServiceController::class);
     Route::post('doctor-schedules', [\App\Http\Controllers\DoctorScheduleController::class, 'store'])->name('doctor-schedules.store');
     Route::delete('doctor-schedules/{doctorSchedule}', [\App\Http\Controllers\DoctorScheduleController::class, 'destroy'])->name('doctor-schedules.destroy');
-    Route::get('payments', [\App\Http\Controllers\PaymentWebController::class, 'index'])->name('payments.index');
 });
 
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-// Télconsultation (protégé auth)
+// Téléconsultation (protégé auth)
 Route::middleware('auth')->prefix('teleconsultation')->group(function () {
     Route::get('/room/{consultation}', [TeleconsultationController::class, 'room'])->name('teleconsultation.room');
     Route::post('/room/{consultation}/join', [TeleconsultationController::class, 'join'])->name('teleconsultation.join');
@@ -139,6 +133,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('dossiers-medicaux', \App\Http\Controllers\DossierMedicalController::class);
+    Route::resource('patients', \App\Http\Controllers\PatientController::class);
     Route::resource('users', UserController::class)->except(['destroy']);
     Route::resource('consultations', \App\Http\Controllers\ConsultationController::class)->except(['destroy']);
     Route::resource('ordonnances', \App\Http\Controllers\OrdonnanceController::class);
@@ -194,3 +189,4 @@ Route::middleware(['auth', 'verified'])
     });
 
 require __DIR__.'/auth.php';
+

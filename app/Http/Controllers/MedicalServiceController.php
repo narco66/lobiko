@@ -12,7 +12,7 @@ class MedicalServiceController extends Controller
     public function index()
     {
         Gate::authorize('viewAny', MedicalService::class);
-        $services = MedicalService::orderBy('libelle')->paginate(15);
+        $services = MedicalService::orderBy('libelle')->paginate(15)->withQueryString();
         return view('medical-services.index', compact('services'));
     }
 

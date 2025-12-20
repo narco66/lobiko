@@ -42,6 +42,20 @@ use App\Policies\DossierMedicalPolicy;
 use App\Policies\OrdonnancePolicy;
 use App\Policies\FacturePolicy;
 use App\Policies\UserPolicy;
+use App\Models\CompagnieAssurance;
+use App\Policies\CompagnieAssurancePolicy;
+use App\Models\ProduitPharmaceutique;
+use App\Policies\ProduitPharmaceutiquePolicy;
+use App\Models\FournisseurPharmaceutique;
+use App\Policies\FournisseurPharmaceutiquePolicy;
+use App\Models\GrilleTarifaire;
+use App\Policies\GrilleTarifairePolicy;
+use App\Models\ActeMedical;
+use App\Policies\ActeMedicalPolicy;
+use App\Models\Forfait;
+use App\Policies\ForfaitPolicy;
+use App\Models\Devis;
+use App\Policies\DevisPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -73,6 +87,13 @@ class AuthServiceProvider extends ServiceProvider
         Convention::class => ConventionPolicy::class,
         Claim::class => ClaimPolicy::class,
         Partner::class => PartnerPolicy::class,
+        CompagnieAssurance::class => CompagnieAssurancePolicy::class,
+        ProduitPharmaceutique::class => ProduitPharmaceutiquePolicy::class,
+        FournisseurPharmaceutique::class => FournisseurPharmaceutiquePolicy::class,
+        GrilleTarifaire::class => GrilleTarifairePolicy::class,
+        ActeMedical::class => ActeMedicalPolicy::class,
+        Forfait::class => ForfaitPolicy::class,
+        Devis::class => DevisPolicy::class,
     ];
 
     /**

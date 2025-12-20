@@ -16,6 +16,7 @@ class AppointmentRequest extends Model
         'email',
         'speciality',
         'mode',
+        'lieu_type',
         'structure_id',
         'practitioner_id',
         'numero_rdv',

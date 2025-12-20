@@ -19,5 +19,6 @@ class PharmacyRequest extends Model
         'address',
         'notes',
         'status',
+        'attachments',
     ];
 }

@@ -9,34 +9,47 @@
         'Cardiologie', 'ORL', 'Psychologie', 'Autre'
     ];
     $checklist = [
-        ['icon' => 'fa-video', 'title' => 'Visio HD sécurisée', 'text' => 'Salle virtuelle chiffrée, accessible sur mobile ou desktop.'],
-        ['icon' => 'fa-file-shield', 'title' => 'Ordonnance numérique', 'text' => 'Prescription électronique partageable avec la pharmacie.'],
-        ['icon' => 'fa-clock', 'title' => 'Rendez-vous rapide', 'text' => 'Créneaux disponibles sous 15 minutes en moyenne.'],
+        ['icon' => 'fa-shield-heart', 'title' => 'Sécurisé', 'text' => 'Visio HD chiffrée, données protégées.'],
+        ['icon' => 'fa-file-prescription', 'title' => 'Ordonnance numérique', 'text' => 'Prescription électronique partageable à la pharmacie.'],
+        ['icon' => 'fa-bolt', 'title' => 'Délais réduits', 'text' => 'Créneaux disponibles sous 15 minutes en moyenne.'],
+    ];
+    $steps = [
+        ['title' => 'Décrivez votre besoin', 'text' => 'Spécialité, symptômes, dispo et numéro de contact.'],
+        ['title' => 'Recevez le lien vidéo', 'text' => 'SMS et email envoyés. Tests audio/vidéo guidés.'],
+        ['title' => 'Consultez et récupérez l’ordo', 'text' => 'Ordonnance numérique et suivi. Livraison pharmacie possible.'],
     ];
     $requirements = [
-        ['icon' => 'fa-wifi', 'title' => 'Connexion stable', 'text' => 'Débit 4G ou Wi-Fi conseillé pour la vidéo.'],
-        ['icon' => 'fa-mobile-screen', 'title' => 'Appareil prêt', 'text' => 'Caméra + micro activés. Utilisez un casque si possible.'],
-        ['icon' => 'fa-passport', 'title' => 'Pièce et antécédents', 'text' => 'Ayez carte d’identité, carnet de santé ou anciens examens.'],
+        ['icon' => 'fa-wifi', 'title' => 'Connexion stable', 'text' => '4G ou Wi‑Fi conseillé pour éviter les coupures.'],
+        ['icon' => 'fa-headset', 'title' => 'Casque/micro', 'text' => 'Pour un son clair et confidentiel.'],
+        ['icon' => 'fa-id-card', 'title' => 'Document d’identité', 'text' => 'Et vos derniers examens si disponibles.'],
+    ];
+    $badges = [
+        ['icon' => 'fa-user-shield', 'text' => 'Praticiens vérifiés'],
+        ['icon' => 'fa-clock', 'text' => '24h/24 - 7j/7'],
+        ['icon' => 'fa-lock', 'text' => 'Salle chiffrée'],
     ];
 @endphp
 
 <section class="tc-hero position-relative overflow-hidden">
     <div class="tc-hero__gradient"></div>
+    <div class="tc-hero__shape tc-hero__shape--left"></div>
+    <div class="tc-hero__shape tc-hero__shape--right"></div>
     <div class="container position-relative py-5">
         <div class="row align-items-center g-4">
             <div class="col-lg-7">
-                <p class="text-uppercase text-primary fw-semibold small mb-2">Service</p>
-                <h1 class="display-5 fw-bold mb-3">Téléconsultation sécurisée en quelques minutes</h1>
-                <p class="lead text-muted mb-4">
-                    Consultez un médecin vérifié par vidéo, partagez vos documents et recevez une ordonnance numérique.
-                    Paiement mobile ou carte, prise en charge assurance si éligible.
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill tc-chip mb-3">
+                    <i class="fas fa-video"></i> Téléconsultation sécurisée
+                </div>
+                <h1 class="display-5 fw-bold mb-3">Consultez un médecin vérifié en moins de 10 minutes</h1>
+                <p class="lead text-white-75 mb-4">
+                    Salle vidéo chiffrée, ordonnances numériques et pharmacies connectées. Accessible 24h/24, 7j/7.
                 </p>
                 <div class="d-flex flex-wrap gap-3">
-                    <a href="#tc-fast-form" class="btn btn-gradient btn-lg rounded-pill px-4">
-                        <i class="fas fa-video me-2"></i> Démarrer une téléconsultation
+                    <a href="#tc-fast-form" class="btn btn-light btn-lg rounded-pill px-4 text-primary fw-semibold">
+                        <i class="fas fa-bolt me-2"></i> Démarrer maintenant
                     </a>
                     <a href="{{ route('appointments.create') }}" class="btn btn-outline-light btn-lg rounded-pill px-4">
-                        Voir le formulaire complet
+                        Formulaire complet
                     </a>
                 </div>
                 <div class="d-flex flex-wrap gap-4 mt-4 text-white">
@@ -48,35 +61,49 @@
                         <small class="text-uppercase fw-semibold text-white-50">Disponibilité</small>
                         <h5 class="mb-0">24h/24 • 7j/7</h5>
                     </div>
+                    <div>
+                        <small class="text-uppercase fw-semibold text-white-50">Praticiens</small>
+                        <h5 class="mb-0">Réseau vérifié</h5>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    @foreach($badges as $badge)
+                        <span class="badge bg-white text-primary rounded-pill d-inline-flex align-items-center gap-2">
+                            <i class="fas {{ $badge['icon'] }}"></i> {{ $badge['text'] }}
+                        </span>
+                    @endforeach
                 </div>
             </div>
             <div class="col-lg-5">
                 <div class="tc-card shadow-lg" id="tc-fast-form">
-                    <h5 class="fw-bold mb-2">Prise en charge immédiate</h5>
-                    <p class="text-muted small mb-3">Remplissez les champs essentiels, nous vous connectons rapidement.</p>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h5 class="fw-bold mb-0">Prise en charge rapide</h5>
+                        <span class="tc-pill">Disponible maintenant</span>
+                    </div>
+                    <p class="text-muted small mb-3">Nous connectons votre demande au praticien éligible le plus proche de vos critères.</p>
                     <form method="POST" action="{{ route('appointments.store') }}" class="row g-3">
                         @csrf
                         <input type="hidden" name="mode" value="teleconsultation">
                         <div class="col-12">
-                            <label class="form-label" for="tc_full_name">Nom complet</label>
+                            <div class="tc-label">Nom complet</div>
                             <input type="text" id="tc_full_name" name="full_name" class="form-control @error('full_name') is-invalid @enderror"
                                    value="{{ old('full_name') }}" required>
                             @error('full_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="tc_phone">Téléphone</label>
+                            <div class="tc-label">Téléphone</div>
                             <input type="text" id="tc_phone" name="phone" class="form-control @error('phone') is-invalid @enderror"
                                    value="{{ old('phone') }}" required>
                             @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="tc_email">Email (optionnel)</label>
+                            <div class="tc-label">Email (optionnel)</div>
                             <input type="email" id="tc_email" name="email" class="form-control @error('email') is-invalid @enderror"
                                    value="{{ old('email') }}">
                             @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="tc_speciality">Spécialité souhaitée</label>
+                            <div class="tc-label">Spécialité souhaitée</div>
                             <select id="tc_speciality" name="speciality" class="form-select @error('speciality') is-invalid @enderror" required>
                                 <option value="">Sélectionner</option>
                                 @foreach($specialities as $spec)
@@ -86,15 +113,15 @@
                             @error('speciality') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="tc_preferred_date">Date souhaitée</label>
+                            <div class="tc-label">Date souhaitée</div>
                             <input type="date" id="tc_preferred_date" name="preferred_date" class="form-control @error('preferred_date') is-invalid @enderror"
                                    value="{{ old('preferred_date') ?? now()->format('Y-m-d') }}" required>
                             @error('preferred_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-12">
-                            <label class="form-label" for="tc_notes">Commentaire (motif, symptômes, assurance)</label>
+                            <div class="tc-label">Motif ou notes</div>
                             <textarea id="tc_notes" name="notes" class="form-control @error('notes') is-invalid @enderror" rows="3"
-                                      placeholder="Ex: fièvre, toux, besoin d’un renouvellement d’ordonnance...">{{ old('notes') }}</textarea>
+                                      placeholder="Ex: fièvre, renouvellement d’ordonnance, douleur persistante...">{{ old('notes') }}</textarea>
                             @error('notes') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-12 d-flex justify-content-end gap-2">
@@ -106,8 +133,6 @@
             </div>
         </div>
     </div>
-    <div class="tc-hero__shape tc-hero__shape--left"></div>
-    <div class="tc-hero__shape tc-hero__shape--right"></div>
 </section>
 
 <section class="py-5">
@@ -131,31 +156,19 @@
 <section class="py-5 bg-light">
     <div class="container">
         <div class="text-center mb-4">
-            <p class="text-uppercase text-primary fw-semibold small mb-2">Comment ça marche</p>
+            <p class="text-uppercase text-primary fw-semibold small mb-2">Parcours</p>
             <h2 class="h3 fw-bold">3 étapes pour consulter</h2>
         </div>
         <div class="row g-4">
-            <div class="col-md-4">
-                <div class="tc-step h-100">
-                    <span class="tc-step__number">1</span>
-                    <h6 class="fw-bold mb-1">Demande en ligne</h6>
-                    <p class="text-muted mb-0">Choix de la spécialité et du créneau. Confirmation instantanée.</p>
+            @foreach($steps as $index => $step)
+                <div class="col-md-4">
+                    <div class="tc-step h-100">
+                        <span class="tc-step__number">{{ $index + 1 }}</span>
+                        <h6 class="fw-bold mb-1">{{ $step['title'] }}</h6>
+                        <p class="text-muted mb-0">{{ $step['text'] }}</p>
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="tc-step h-100">
-                    <span class="tc-step__number">2</span>
-                    <h6 class="fw-bold mb-1">Accès à la salle</h6>
-                    <p class="text-muted mb-0">Lien vidéo envoyé par email/SMS. Tests audio/vidéo guidés.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="tc-step h-100">
-                    <span class="tc-step__number">3</span>
-                    <h6 class="fw-bold mb-1">Ordonnance et suivi</h6>
-                    <p class="text-muted mb-0">Prescription numérique, pharmacie connectée, rendez-vous de contrôle.</p>
-                </div>
-            </div>
+            @endforeach
         </div>
     </div>
 </section>
@@ -167,8 +180,7 @@
                 <p class="text-uppercase text-primary fw-semibold small mb-2">Avant de commencer</p>
                 <h3 class="h4 fw-bold mb-3">Vérifiez ces points pour une expérience fluide</h3>
                 <p class="text-muted mb-4">
-                    Nous réduisons les échecs de connexion grâce à des tests pré-appel et un support réactif. Si besoin,
-                    nous basculons vers l’audio ou replanifions en quelques clics.
+                    Tests pré-appel, support humain réactif, bascule audio si la connexion baisse et replanification en un clic.
                 </p>
                 <div class="d-flex flex-wrap gap-2">
                     <span class="badge bg-success">Support 24/7</span>
@@ -217,6 +229,20 @@
     .tc-hero {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: #fff;
+    }
+    .tc-chip {
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.18);
+        color: #fff;
+        font-weight: 600;
+    }
+    .tc-pill {
+        padding: 6px 12px;
+        background: rgba(102, 126, 234, 0.12);
+        color: #4c51bf;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 12px;
     }
     .tc-hero__gradient {
         position: absolute;
@@ -295,6 +321,13 @@
         margin-bottom: 8px;
         backdrop-filter: blur(2px);
     }
+    .tc-label {
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 4px;
+        font-size: 14px;
+    }
+    .text-white-75 { color: rgba(255,255,255,0.78); }
     @media (max-width: 768px) {
         .tc-hero { text-align: left; }
         .tc-hero__shape { display: none; }

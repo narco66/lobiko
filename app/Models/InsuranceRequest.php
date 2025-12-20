@@ -19,5 +19,18 @@ class InsuranceRequest extends Model
         'request_type',
         'notes',
         'status',
+        'beneficiary',
+        'contract_number',
+        'contract_valid_until',
+        'plafond_remaining',
+        'exclusions',
+        'waiting_period_days',
+        'tiers_payant',
+        'preauthorization_ref',
+        'simulated_total',
+        'coverage_rate',
+        'covered_amount',
+        'patient_due',
+        'attachments',
     ];
 }

@@ -27,7 +27,18 @@ class PublicServiceRequestController extends Controller
             'delivery_mode' => ['required', 'in:retrait,livraison'],
             'address' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'attachments.*' => ['file', 'max:4096'],
         ]);
+
+        $attachments = [];
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $attachments[] = $file->store('pharmacy_attachments');
+            }
+        }
+        if (!empty($attachments)) {
+            $data['attachments'] = $attachments;
+        }
 
         $record = PharmacyRequest::create($data);
 
@@ -53,8 +64,43 @@ class PublicServiceRequestController extends Controller
             'policy_number' => ['required', 'string', 'max:100'],
             'insurer' => ['nullable', 'string', 'max:150'],
             'request_type' => ['required', 'in:preautorisation,remboursement,information'],
+            'beneficiary' => ['nullable', 'string', 'max:255'],
+            'contract_number' => ['nullable', 'string', 'max:150'],
+            'contract_valid_until' => ['nullable', 'date'],
+            'plafond_remaining' => ['nullable', 'numeric', 'min:0'],
+            'exclusions' => ['nullable', 'string', 'max:1000'],
+            'waiting_period_days' => ['nullable', 'integer', 'min:0', 'max:365'],
+            'tiers_payant' => ['nullable', 'boolean'],
+            'preauthorization_ref' => ['nullable', 'string', 'max:150'],
+            'simulated_total' => ['nullable', 'numeric', 'min:0'],
+            'coverage_rate' => ['nullable', 'integer', 'min:0', 'max:100'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'attachments.*' => ['file', 'max:4096'],
         ]);
+
+        // Simulation RAC
+        $total = $data['simulated_total'] ?? null;
+        $rate = $data['coverage_rate'] ?? null;
+        if ($total !== null && $rate !== null) {
+            $covered = round(($total * $rate) / 100, 2);
+            $due = max(0, round($total - $covered, 2));
+            $data['covered_amount'] = $covered;
+            $data['patient_due'] = $due;
+        }
+
+        // Tiers payant flag
+        $data['tiers_payant'] = (bool) ($data['tiers_payant'] ?? false);
+
+        // Gestion des pièces jointes
+        $attachments = [];
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $attachments[] = $file->store('insurance_attachments');
+            }
+        }
+        if (!empty($attachments)) {
+            $data['attachments'] = $attachments;
+        }
 
         $record = InsuranceRequest::create($data);
 

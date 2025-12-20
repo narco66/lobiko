@@ -25,6 +25,7 @@ class RendezVous extends Model
         'date_heure_fin',
         'type',
         'modalite',
+        'lieu_type',
         'specialite',
         'acte_id',
         'motif',
@@ -76,6 +77,14 @@ class RendezVous extends Model
         'documents_requis' => 'array',
         'paiement_confirme' => 'boolean',
     ];
+
+    public static function generateNumero(): string
+    {
+        $year = now()->year;
+        $month = str_pad(now()->month, 2, '0', STR_PAD_LEFT);
+        $count = static::whereYear('created_at', $year)->whereMonth('created_at', now()->month)->count() + 1;
+        return 'RDV-' . $year . $month . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+    }
 
     public function professionnel(): BelongsTo
     {

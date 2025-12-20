@@ -6,30 +6,41 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class RendezVousRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return auth()->check();
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
+        $rdvId = $this->route('appointment')?->id ?? null;
+
         return [
+            'numero_rdv' => ['nullable', 'string', 'max:100'],
             'patient_id' => ['required', 'uuid', 'exists:users,id'],
             'professionnel_id' => ['required', 'uuid', 'exists:users,id'],
-            'structure_id' => ['required', 'uuid', 'exists:structures_medicales,id'],
-            'date_heure' => ['required', 'date', 'after:now'],
-            'type' => ['required', 'in:consultation,controle,urgence,teleconsultation'],
-            'modalite' => ['required', 'in:presentiel,teleconsultation'],
-            'motif' => ['required', 'string', 'max:500'],
-            'specialite' => ['nullable', 'string', 'max:255'],
+            'structure_id' => ['nullable', 'uuid', 'exists:structures_medicales,id'],
+            'date_heure' => ['required', 'date'],
+            'duree_prevue' => ['nullable', 'integer', 'min:0'],
+            'type' => ['nullable', 'string', 'max:100'],
+            'modalite' => ['required', 'in:presentiel,teleconsultation,domicile'],
+            'lieu_type' => ['nullable', 'in:cabinet,clinique,domicile,visio'],
+            'specialite' => ['nullable', 'string', 'max:190'],
+            'motif' => ['nullable', 'string', 'max:500'],
+            'symptomes' => ['nullable', 'array'],
+            'urgence_niveau' => ['nullable', 'string', 'max:50'],
+            'statut' => ['nullable', 'string', 'max:50'],
+            'notes_patient' => ['nullable', 'string'],
+            'instructions_preparation' => ['nullable', 'string'],
+            'documents_requis' => ['nullable', 'array'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'symptomes' => $this->symptomes ?: null,
+            'documents_requis' => $this->documents_requis ?: null,
+        ]);
     }
 }

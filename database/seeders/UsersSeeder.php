@@ -15,8 +15,17 @@ class UsersSeeder extends Seeder
      */
     public function run(): void
     {
-        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
-        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $roles = collect([
+            'super-admin',
+            'admin',
+            'medecin',
+            'pharmacien',
+            'infirmier',
+            'patient',
+            'comptable',
+            'assureur',
+            'livreur',
+        ])->mapWithKeys(fn ($name) => [$name => Role::firstOrCreate(['name' => $name, 'guard_name' => 'web'])]);
 
         // Super Admin
         $superAdmin = User::updateOrCreate(
@@ -40,7 +49,7 @@ class UsersSeeder extends Seeder
             'langue_preferee' => 'fr',
             'photo_profil' => 'avatars/admin.jpg',
         ]);
-        $superAdmin->syncRoles([$superAdminRole]);
+        $superAdmin->syncRoles([$roles['super-admin']]);
 
         // Admin
         $admin = User::updateOrCreate(
@@ -63,7 +72,7 @@ class UsersSeeder extends Seeder
             'statut_compte' => 'actif',
             'langue_preferee' => 'fr',
         ]);
-        $admin->syncRoles([$adminRole]);
+        $admin->syncRoles([$roles['admin']]);
 
         // Médecins
         $medecins = [
@@ -115,14 +124,15 @@ class UsersSeeder extends Seeder
         ];
 
         foreach ($medecins as $data) {
-            $medecin = User::create([
+            $medecin = User::updateOrCreate(
+                ['email' => $data['email']],
+                [
                 'matricule' => User::generateMatricule((object)['role' => 'medecin']),
                 'nom' => $data['nom'],
                 'prenom' => $data['prenom'],
                 'date_naissance' => fake()->dateTimeBetween('-55 years', '-30 years'),
                 'sexe' => in_array($data['prenom'], ['Marie', 'Sophie']) ? 'F' : 'M',
                 'telephone' => $data['telephone'],
-                'email' => $data['email'],
                 'email_verified_at' => now(),
                 'password' => Hash::make('Medecin@2025'),
                 'adresse_rue' => fake()->streetName(),
@@ -141,7 +151,7 @@ class UsersSeeder extends Seeder
                 'note_moyenne' => fake()->randomFloat(1, 3.5, 5),
                 'nombre_evaluations' => fake()->numberBetween(10, 100),
             ]);
-            $medecin->assignRole('medecin');
+            $medecin->syncRoles([$roles['medecin']]);
         }
 
         // Pharmaciens
@@ -170,14 +180,15 @@ class UsersSeeder extends Seeder
         ];
 
         foreach ($pharmaciens as $data) {
-            $pharmacien = User::create([
+            $pharmacien = User::updateOrCreate(
+                ['email' => $data['email']],
+                [
                 'matricule' => User::generateMatricule((object)['role' => 'pharmacien']),
                 'nom' => $data['nom'],
                 'prenom' => $data['prenom'],
                 'date_naissance' => fake()->dateTimeBetween('-50 years', '-30 years'),
                 'sexe' => in_array($data['prenom'], ['Jeanne', 'Sylvie']) ? 'F' : 'M',
                 'telephone' => $data['telephone'],
-                'email' => $data['email'],
                 'email_verified_at' => now(),
                 'password' => Hash::make('Pharmacie@2025'),
                 'adresse_rue' => fake()->streetName(),
@@ -194,19 +205,20 @@ class UsersSeeder extends Seeder
                 'statut_compte' => 'actif',
                 'langue_preferee' => 'fr',
             ]);
-            $pharmacien->assignRole('pharmacien');
+            $pharmacien->syncRoles([$roles['pharmacien']]);
         }
 
         // Infirmiers
         for ($i = 1; $i <= 5; $i++) {
-            $infirmier = User::create([
+            $infirmier = User::updateOrCreate(
+                ['email' => 'infirmier' . $i . '@lobiko.com'],
+                [
                 'matricule' => User::generateMatricule((object)['role' => 'infirmier']),
                 'nom' => fake()->lastName(),
                 'prenom' => fake()->firstName(),
                 'date_naissance' => fake()->dateTimeBetween('-45 years', '-25 years'),
                 'sexe' => fake()->randomElement(['M', 'F']),
                 'telephone' => '+24104444' . str_pad($i, 4, '0', STR_PAD_LEFT),
-                'email' => 'infirmier' . $i . '@lobiko.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('Infirmier@2025'),
                 'adresse_rue' => fake()->streetName(),
@@ -223,7 +235,7 @@ class UsersSeeder extends Seeder
                 'statut_compte' => 'actif',
                 'langue_preferee' => 'fr',
             ]);
-            $infirmier->assignRole('infirmier');
+            $infirmier->syncRoles([$roles['infirmier']]);
         }
 
         // Patients
@@ -261,14 +273,15 @@ class UsersSeeder extends Seeder
         ];
 
         foreach ($patients as $data) {
-            $patient = User::create([
+            $patient = User::updateOrCreate(
+                ['email' => $data['email']],
+                [
                 'matricule' => User::generateMatricule((object)['role' => 'patient']),
                 'nom' => $data['nom'],
                 'prenom' => $data['prenom'],
                 'date_naissance' => fake()->dateTimeBetween('-60 years', '-18 years'),
                 'sexe' => in_array($data['prenom'], ['Alice', 'Fatou']) ? 'F' : 'M',
                 'telephone' => $data['telephone'],
-                'email' => $data['email'],
                 'email_verified_at' => now(),
                 'password' => Hash::make('Patient@2025'),
                 'adresse_rue' => fake()->streetName(),
@@ -282,7 +295,7 @@ class UsersSeeder extends Seeder
                 'piece_identite_type' => 'CNI',
                 'piece_identite_numero' => fake()->numerify('##########'),
             ]);
-            $patient->assignRole('patient');
+            $patient->syncRoles([$roles['patient']]);
         }
 
         // Créer plus de patients pour les tests

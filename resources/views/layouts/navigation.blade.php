@@ -17,33 +17,121 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-4 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        <i class="fas fa-gauge-high me-1" aria-hidden="true"></i> {{ __('Dashboard') }}
+                        <i class="fas fa-gauge-high me-1" aria-hidden="true"></i> Dashboard
                     </x-nav-link>
+
+                    <span class="text-muted small fw-semibold px-2 mt-1">Soins</span>
                     @canany(['view dossiers_medicaux', 'viewAny', 'super-admin', 'admin', 'medecin'])
                         <x-nav-link :href="route('dossiers-medicaux.index')" :active="request()->routeIs('dossiers-medicaux.*')">
                             <i class="fas fa-notes-medical me-1" aria-hidden="true"></i> Dossiers medicaux
                         </x-nav-link>
                     @endcanany
-                    @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\User::class) || auth()->user()?->can('users.view'))
-                        <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
-                            <i class="fas fa-users me-1" aria-hidden="true"></i> Utilisateurs
-                        </x-nav-link>
-                    @endif
                     @canany(['view consultations', 'super-admin', 'admin', 'medecin'])
                         <x-nav-link :href="route('consultations.index')" :active="request()->routeIs('consultations.*')">
                             <i class="fas fa-stethoscope me-1" aria-hidden="true"></i> Consultations
                         </x-nav-link>
                     @endcanany
+                    @auth
+                        <x-nav-link :href="route('appointments.index')" :active="request()->routeIs('appointments.*')">
+                            <i class="fas fa-calendar-alt me-1" aria-hidden="true"></i> Rendez-vous
+                        </x-nav-link>
+                    @endauth
                     @canany(['view ordonnances', 'super-admin', 'admin', 'medecin', 'pharmacien'])
                         <x-nav-link :href="route('ordonnances.index')" :active="request()->routeIs('ordonnances.*')">
                             <i class="fas fa-file-prescription me-1" aria-hidden="true"></i> Ordonnances
                         </x-nav-link>
                     @endcanany
+
+                    <span class="text-muted small fw-semibold px-2 mt-1">Ressources</span>
+                    @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\User::class) || auth()->user()?->can('users.view'))
+                        <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                            <i class="fas fa-users me-1" aria-hidden="true"></i> Utilisateurs
+                        </x-nav-link>
+                    @endif
+                    @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\MedicalStructure::class))
+                        <x-nav-link :href="route('admin.structures.index')" :active="request()->routeIs('admin.structures.*')">
+                            <i class="fas fa-hospital me-1" aria-hidden="true"></i> Structures
+                        </x-nav-link>
+                    @endif
+                    @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\Doctor::class))
+                        <x-nav-link :href="route('admin.doctors.index')" :active="request()->routeIs('admin.doctors.*')">
+                            <i class="fas fa-user-md me-1" aria-hidden="true"></i> Medecins
+                        </x-nav-link>
+                    @endif
+                    @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']))
+                        <x-nav-link :href="route('admin.specialties.index')" :active="request()->routeIs('admin.specialties.*')">
+                            <i class="fas fa-sitemap me-1" aria-hidden="true"></i> Specialites
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.services.index')" :active="request()->routeIs('admin.services.*')">
+                            <i class="fas fa-layer-group me-1" aria-hidden="true"></i> Services
+                        </x-nav-link>
+                    @endif
+
+                    <span class="text-muted small fw-semibold px-2 mt-1">Assurance</span>
+                    @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\CompagnieAssurance::class) || auth()->user()?->can('assurances.view'))
+                        <x-nav-link :href="route('admin.assurances.index')" :active="request()->routeIs('admin.assurances.*')">
+                            <i class="fas fa-shield-alt me-1" aria-hidden="true"></i> Assurances
+                        </x-nav-link>
+                    @endif
+
+                    <span class="text-muted small fw-semibold px-2 mt-1">Pharmacie</span>
+                    @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\Pharmacie::class))
+                        <x-nav-link :href="route('admin.pharmacies.index')" :active="request()->routeIs('admin.pharmacies.*')">
+                            <i class="fas fa-pills me-1" aria-hidden="true"></i> Pharmacies
+                        </x-nav-link>
+                    @endif
+                    @auth
+                        <x-nav-link :href="route('commandes-pharma.index')" :active="request()->routeIs('commandes-pharma.*')">
+                            <i class="fas fa-capsules me-1" aria-hidden="true"></i> Commandes pharma
+                        </x-nav-link>
+                    @endauth
+                    @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\ProduitPharmaceutique::class))
+                        <x-nav-link :href="route('admin.produits-pharmaceutiques.index')" :active="request()->routeIs('admin.produits-pharmaceutiques.*')">
+                            <i class="fas fa-capsules me-1" aria-hidden="true"></i> Produits
+                        </x-nav-link>
+                    @endif
+                    @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\FournisseurPharmaceutique::class))
+                        <x-nav-link :href="route('admin.fournisseurs-pharmaceutiques.index')" :active="request()->routeIs('admin.fournisseurs-pharmaceutiques.*')">
+                            <i class="fas fa-truck-medical me-1" aria-hidden="true"></i> Fournisseurs
+                        </x-nav-link>
+                    @endif
+
+                    <span class="text-muted small fw-semibold px-2 mt-1">Laboratoire</span>
+                    @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']))
+                        <x-nav-link :href="route('admin.laboratoires.index')" :active="request()->routeIs('admin.laboratoires.*')">
+                            <i class="fas fa-vial me-1" aria-hidden="true"></i> Laboratoires
+                        </x-nav-link>
+                    @endif
+
+                    <span class="text-muted small fw-semibold px-2 mt-1">Finance</span>
+                    @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\GrilleTarifaire::class))
+                        <x-nav-link :href="route('admin.grilles-tarifaires.index')" :active="request()->routeIs('admin.grilles-tarifaires.*')">
+                            <i class="fas fa-tag me-1" aria-hidden="true"></i> Grilles tarifaires
+                        </x-nav-link>
+                    @endif
+                    @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\ActeMedical::class))
+                        <x-nav-link :href="route('admin.actes-medicaux.index')" :active="request()->routeIs('admin.actes-medicaux.*')">
+                            <i class="fas fa-heartbeat me-1" aria-hidden="true"></i> Actes medicaux
+                        </x-nav-link>
+                    @endif
+                    @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\Forfait::class))
+                        <x-nav-link :href="route('admin.forfaits.index')" :active="request()->routeIs('admin.forfaits.*')">
+                            <i class="fas fa-layer-group me-1" aria-hidden="true"></i> Forfaits
+                        </x-nav-link>
+                    @endif
                     @canany(['view factures', 'super-admin', 'admin', 'comptable'])
-                        <x-nav-link :href="route('factures.index')" :active="request()->routeIs('factures.*')">
+                        <x-nav-link :href="route('admin.devis.index')" :active="request()->routeIs('admin.devis.*')">
+                            <i class="fas fa-file-signature me-1" aria-hidden="true"></i> Devis
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.factures.index')" :active="request()->routeIs('admin.factures.*')">
                             <i class="fas fa-file-invoice-dollar me-1" aria-hidden="true"></i> Facturation
                         </x-nav-link>
                     @endcanany
+                    @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']))
+                        <x-nav-link :href="route('admin.payments.index')" :active="request()->routeIs('admin.payments.*')">
+                            <i class="fas fa-credit-card me-1" aria-hidden="true"></i> Paiements
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -99,33 +187,74 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
+                Dashboard
             </x-responsive-nav-link>
+
+            <div class="px-4 text-xs text-gray-500 uppercase">Soins</div>
             @canany(['view dossiers_medicaux', 'viewAny', 'super-admin', 'admin', 'medecin'])
-                <x-responsive-nav-link :href="route('dossiers-medicaux.index')" :active="request()->routeIs('dossiers-medicaux.*')">
-                    Dossiers medicaux
-                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('dossiers-medicaux.index')" :active="request()->routeIs('dossiers-medicaux.*')">Dossiers medicaux</x-responsive-nav-link>
             @endcanany
-            @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\User::class) || auth()->user()?->can('users.view'))
-                <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
-                    Utilisateurs
-                </x-responsive-nav-link>
-            @endif
             @canany(['view consultations', 'super-admin', 'admin', 'medecin'])
-                <x-responsive-nav-link :href="route('consultations.index')" :active="request()->routeIs('consultations.*')">
-                    Consultations
-                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('consultations.index')" :active="request()->routeIs('consultations.*')">Consultations</x-responsive-nav-link>
             @endcanany
+            @auth
+                <x-responsive-nav-link :href="route('appointments.index')" :active="request()->routeIs('appointments.*')">Rendez-vous</x-responsive-nav-link>
+            @endauth
             @canany(['view ordonnances', 'super-admin', 'admin', 'medecin', 'pharmacien'])
-                <x-responsive-nav-link :href="route('ordonnances.index')" :active="request()->routeIs('ordonnances.*')">
-                    Ordonnances
-                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('ordonnances.index')" :active="request()->routeIs('ordonnances.*')">Ordonnances</x-responsive-nav-link>
             @endcanany
+
+            <div class="px-4 text-xs text-gray-500 uppercase">Ressources</div>
+            @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\User::class) || auth()->user()?->can('users.view'))
+                <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">Utilisateurs</x-responsive-nav-link>
+            @endif
+            @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\MedicalStructure::class))
+                <x-responsive-nav-link :href="route('admin.structures.index')" :active="request()->routeIs('admin.structures.*')">Structures</x-responsive-nav-link>
+            @endif
+            @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\Doctor::class))
+                <x-responsive-nav-link :href="route('admin.doctors.index')" :active="request()->routeIs('admin.doctors.*')">Medecins</x-responsive-nav-link>
+            @endif
+            @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']))
+                <x-responsive-nav-link :href="route('admin.specialties.index')" :active="request()->routeIs('admin.specialties.*')">Specialites</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.services.index')" :active="request()->routeIs('admin.services.*')">Services</x-responsive-nav-link>
+            @endif
+
+            <div class="px-4 text-xs text-gray-500 uppercase">Assurance</div>
+            @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\CompagnieAssurance::class) || auth()->user()?->can('assurances.view'))
+                <x-responsive-nav-link :href="route('admin.assurances.index')" :active="request()->routeIs('admin.assurances.*')">Assurances</x-responsive-nav-link>
+            @endif
+
+            <div class="px-4 text-xs text-gray-500 uppercase">Pharmacie</div>
+            @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\Pharmacie::class))
+                <x-responsive-nav-link :href="route('admin.pharmacies.index')" :active="request()->routeIs('admin.pharmacies.*')">Pharmacies</x-responsive-nav-link>
+            @endif
+            @auth
+                <x-responsive-nav-link :href="route('commandes-pharma.index')" :active="request()->routeIs('commandes-pharma.*')">Commandes pharma</x-responsive-nav-link>
+            @endauth
+            @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\ProduitPharmaceutique::class))
+                <x-responsive-nav-link :href="route('admin.produits-pharmaceutiques.index')" :active="request()->routeIs('admin.produits-pharmaceutiques.*')">Produits</x-responsive-nav-link>
+            @endif
+            @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\FournisseurPharmaceutique::class))
+                <x-responsive-nav-link :href="route('admin.fournisseurs-pharmaceutiques.index')" :active="request()->routeIs('admin.fournisseurs-pharmaceutiques.*')">Fournisseurs</x-responsive-nav-link>
+            @endif
+
+            <div class="px-4 text-xs text-gray-500 uppercase">Finance</div>
+            @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\GrilleTarifaire::class))
+                <x-responsive-nav-link :href="route('admin.grilles-tarifaires.index')" :active="request()->routeIs('admin.grilles-tarifaires.*')">Grilles tarifaires</x-responsive-nav-link>
+            @endif
+            @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\ActeMedical::class))
+                <x-responsive-nav-link :href="route('admin.actes-medicaux.index')" :active="request()->routeIs('admin.actes-medicaux.*')">Actes medicaux</x-responsive-nav-link>
+            @endif
+            @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']) || Gate::check('viewAny', App\Models\Forfait::class))
+                <x-responsive-nav-link :href="route('admin.forfaits.index')" :active="request()->routeIs('admin.forfaits.*')">Forfaits</x-responsive-nav-link>
+            @endif
             @canany(['view factures', 'super-admin', 'admin', 'comptable'])
-                <x-responsive-nav-link :href="route('factures.index')" :active="request()->routeIs('factures.*')">
-                    Facturation
-                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.devis.index')" :active="request()->routeIs('admin.devis.*')">Devis</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.factures.index')" :active="request()->routeIs('admin.factures.*')">Facturation</x-responsive-nav-link>
             @endcanany
+            @if(auth()->user()?->hasAnyRole(['Super Admin','Admin','super-admin','admin']))
+                <x-responsive-nav-link :href="route('admin.payments.index')" :active="request()->routeIs('admin.payments.*')">Paiements</x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

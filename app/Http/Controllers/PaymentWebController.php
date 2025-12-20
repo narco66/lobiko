@@ -12,10 +12,11 @@ class PaymentWebController extends Controller
     {
         Gate::authorize('viewAny', Paiement::class);
 
-        $query = Paiement::query()->orderByDesc('created_at');
-        if ($request->filled('statut')) {
-            $query->where('statut', $request->string('statut'));
-        }
+        $query = Paiement::with(['payeur'])
+            ->orderByDesc('created_at')
+            ->when($request->filled('statut'), fn($q) => $q->where('statut', $request->string('statut')))
+            ->when($request->filled('reference'), fn($q) => $q->where('numero_paiement', 'like', '%'.$request->reference.'%'))
+            ->when($request->filled('mode_paiement'), fn($q) => $q->where('mode_paiement', $request->mode_paiement));
 
         $payments = $query->paginate(15);
 

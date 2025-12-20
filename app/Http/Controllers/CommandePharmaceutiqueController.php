@@ -74,6 +74,10 @@ class CommandePharmaceutiqueController extends Controller
         $ordonnance = null;
         $pharmacies = Pharmacie::active()->get();
         $produits = [];
+        $catalogueProduits = ProduitPharmaceutique::select('id', 'nom_commercial')
+            ->orderBy('nom_commercial')
+            ->limit(200)
+            ->get();
 
         // Si une ordonnance est fournie
         if ($request->has('ordonnance_id')) {
@@ -88,7 +92,7 @@ class CommandePharmaceutiqueController extends Controller
             });
         }
 
-        return view('commandes-pharma.create', compact('pharmacies', 'ordonnance', 'produits'));
+        return view('commandes-pharma.create', compact('pharmacies', 'ordonnance', 'produits', 'catalogueProduits'));
     }
 
     /**
@@ -103,6 +107,7 @@ class CommandePharmaceutiqueController extends Controller
             $data['patient_id'] = Auth::id();
             $data['date_commande'] = now();
             $data['statut'] = 'en_attente';
+            $data['urgent'] = (bool) ($data['urgent'] ?? false);
 
             // Calculer les frais de livraison si nécessaire
             if ($data['mode_retrait'] === 'livraison') {
@@ -198,12 +203,35 @@ class CommandePharmaceutiqueController extends Controller
             'paiements'
         ]);
 
+        // Calcul distance/ETA si coordonnées disponibles
+        $distanceKm = null;
+        $etaMinutes = null;
+        $horsZone = false;
+        if ($commande->mode_retrait === 'livraison'
+            && $commande->pharmacie?->latitude && $commande->pharmacie?->longitude
+            && $commande->latitude_livraison && $commande->longitude_livraison) {
+
+            $distanceKm = $this->calculerDistanceKm(
+                (float) $commande->pharmacie->latitude,
+                (float) $commande->pharmacie->longitude,
+                (float) $commande->latitude_livraison,
+                (float) $commande->longitude_livraison
+            );
+
+            $vitesseKmH = 25; // estimation mix moto/voiture en urbain
+            $etaMinutes = (int) ceil(($distanceKm / $vitesseKmH) * 60);
+
+            if ($commande->pharmacie->rayon_livraison_km && $distanceKm > (float) $commande->pharmacie->rayon_livraison_km) {
+                $horsZone = true;
+            }
+        }
+
         // Générer le QR Code
         $qrCode = base64_encode(QrCode::format('png')
             ->size(200)
             ->generate(route('commandes-pharma.valider-code', $commande->code_retrait)));
 
-        return view('commandes-pharma.show', compact('commande', 'qrCode'));
+        return view('commandes-pharma.show', compact('commande', 'qrCode', 'distanceKm', 'etaMinutes', 'horsZone'));
     }
 
     /**
@@ -378,6 +406,18 @@ class CommandePharmaceutiqueController extends Controller
         $pdf = Pdf::loadView('commandes-pharma.bon', compact('commande'));
 
         return $pdf->download("bon-commande-{$commande->numero_commande}.pdf");
+    }
+
+    protected function calculerDistanceKm(float $lat1, float $lon1, float $lat2, float $lon2): float
+    {
+        $earthRadius = 6371; // km
+        $latDiff = deg2rad($lat2 - $lat1);
+        $lonDiff = deg2rad($lon2 - $lon1);
+        $a = sin($latDiff / 2) ** 2 +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($lonDiff / 2) ** 2;
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        return round($earthRadius * $c, 2);
     }
 
     /**

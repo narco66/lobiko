@@ -19,12 +19,56 @@ class MedicalStructureController extends Controller
     public function create()
     {
         Gate::authorize('create', MedicalStructure::class);
-        return view('medical-structures.create');
+
+        // Récupérer tous les utilisateurs pour le select
+        $users = \App\Models\User::orderBy('nom')->orderBy('prenom')
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'text' => $user->nom . ' ' . $user->prenom . ' (' . $user->email . ')',
+                    'roles' => $user->getRoleNames()->implode(', ')
+                ];
+            });
+
+        // Générer le prochain code structure
+        $lastStructure = MedicalStructure::withTrashed()
+            ->where('code_structure', 'like', 'STR%')
+            ->orderBy('code_structure', 'desc')
+            ->first();
+
+        if ($lastStructure) {
+            $lastNumber = (int) substr($lastStructure->code_structure, 3);
+            $nextCode = 'STR' . str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+        } else {
+            $nextCode = 'STR001';
+        }
+
+        return view('medical-structures.create', compact('users', 'nextCode'));
     }
 
     public function store(MedicalStructureStoreRequest $request)
     {
         $data = $request->validated();
+
+        // Générer automatiquement le code si non fourni
+        if (empty($data['code_structure'])) {
+            $lastStructure = MedicalStructure::withTrashed()
+                ->where('code_structure', 'like', 'STR%')
+                ->orderBy('code_structure', 'desc')
+                ->first();
+
+            if ($lastStructure) {
+                $lastNumber = (int) substr($lastStructure->code_structure, 3);
+                $data['code_structure'] = 'STR' . str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+            } else {
+                $data['code_structure'] = 'STR001';
+            }
+        }
+
+        // Le champ horaires_ouverture est requis en base mais non present sur le formulaire pour l'instant
+        $data['horaires_ouverture'] = $data['horaires_ouverture'] ?? [];
+
         MedicalStructure::create($data);
 
         return redirect()->route('admin.structures.index')->with('success', 'Structure créée avec succès.');
@@ -39,7 +83,19 @@ class MedicalStructureController extends Controller
     public function edit(MedicalStructure $structure)
     {
         Gate::authorize('update', $structure);
-        return view('medical-structures.edit', compact('structure'));
+
+        // Récupérer tous les utilisateurs pour le select
+        $users = \App\Models\User::orderBy('nom')->orderBy('prenom')
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'text' => $user->nom . ' ' . $user->prenom . ' (' . $user->email . ')',
+                    'roles' => $user->getRoleNames()->implode(', ')
+                ];
+            });
+
+        return view('medical-structures.edit', compact('structure', 'users'));
     }
 
     public function update(MedicalStructureUpdateRequest $request, MedicalStructure $structure)

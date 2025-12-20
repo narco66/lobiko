@@ -8,6 +8,7 @@ use App\Models\AlerteStock;
 use App\Models\ProduitPharmaceutique;
 use App\Http\Requests\PharmacieRequest;
 use App\Http\Requests\StockRequest;
+use App\Models\MedicalStructure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -63,7 +64,7 @@ class PharmacieController extends Controller
                 ->orderBy('distance');
         }
 
-        $pharmacies = $query->paginate(15);
+        $pharmacies = $query->orderBy('nom_pharmacie')->paginate(15)->withQueryString();
 
         return view('pharmacie.index', compact('pharmacies'));
     }
@@ -73,7 +74,8 @@ class PharmacieController extends Controller
      */
     public function create()
     {
-        return view('pharmacie.create');
+        $structures = MedicalStructure::orderBy('nom_structure')->get();
+        return view('pharmacie.create', compact('structures'));
     }
 
     /**
@@ -83,7 +85,8 @@ class PharmacieController extends Controller
     {
         DB::beginTransaction();
         try {
-            $pharmacie = Pharmacie::create($request->validated());
+            $data = $this->sanitize($request->validated());
+            $pharmacie = Pharmacie::create($data);
 
             // Créer les stocks initiaux si fournis
             if ($request->has('stocks_initiaux')) {
@@ -94,7 +97,7 @@ class PharmacieController extends Controller
 
             DB::commit();
 
-            return redirect()->route('pharmacies.show', $pharmacie)
+            return redirect()->route('admin.pharmacies.show', $pharmacie)
                 ->with('success', 'Pharmacie créée avec succès');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -131,7 +134,8 @@ class PharmacieController extends Controller
      */
     public function edit(Pharmacie $pharmacie)
     {
-        return view('pharmacie.edit', compact('pharmacie'));
+        $structures = MedicalStructure::orderBy('nom_structure')->get();
+        return view('pharmacie.edit', compact('pharmacie', 'structures'));
     }
 
     /**
@@ -139,9 +143,9 @@ class PharmacieController extends Controller
      */
     public function update(PharmacieRequest $request, Pharmacie $pharmacie)
     {
-        $pharmacie->update($request->validated());
+        $pharmacie->update($this->sanitize($request->validated()));
 
-        return redirect()->route('pharmacies.show', $pharmacie)
+        return redirect()->route('admin.pharmacies.show', $pharmacie)
             ->with('success', 'Pharmacie mise à jour avec succès');
     }
 
@@ -152,7 +156,7 @@ class PharmacieController extends Controller
     {
         try {
             $pharmacie->delete();
-            return redirect()->route('pharmacies.index')
+            return redirect()->route('admin.pharmacies.index')
                 ->with('success', 'Pharmacie supprimée avec succès');
         } catch (\Exception $e) {
             return back()->with('error', 'Impossible de supprimer cette pharmacie');
@@ -472,5 +476,16 @@ class PharmacieController extends Controller
             ->get();
 
         return view('pharmacie.dashboard', compact('pharmacie', 'statistiques', 'ventesParJour', 'topProduits'));
+    }
+
+    private function sanitize(array $data): array
+    {
+        $data['service_garde'] = (bool) ($data['service_garde'] ?? false);
+        $data['livraison_disponible'] = (bool) ($data['livraison_disponible'] ?? false);
+        $data['paiement_mobile_money'] = (bool) ($data['paiement_mobile_money'] ?? false);
+        $data['paiement_carte'] = (bool) ($data['paiement_carte'] ?? false);
+        $data['paiement_especes'] = (bool) ($data['paiement_especes'] ?? false);
+
+        return $data;
     }
 }

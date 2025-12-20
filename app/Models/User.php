@@ -26,6 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $fillable = [
         'matricule',
+        'name',
         'nom',
         'prenom',
         'date_naissance',
@@ -159,6 +160,7 @@ class User extends Authenticatable implements MustVerifyEmail
                 return [
                     'prenom' => $parts[0] ?? '',
                     'nom' => $parts[1] ?? '',
+                    'name' => trim($value),
                 ];
             }
         );

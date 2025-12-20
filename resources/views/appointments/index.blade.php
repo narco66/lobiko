@@ -1,97 +1,108 @@
 @extends('layouts.app')
-
-@section('title', 'Mes rendez-vous')
+@section('title', 'Rendez-vous')
 
 @section('content')
-@php
-    $first = $upcoming[0] ?? null;
-    $badgeMap = [
-        'Confirme' => 'success',
-        'Confirmé' => 'success',
-        'ConfirmÇ¸' => 'success',
-        'Confirmé(e)' => 'success',
-        'En attente' => 'warning',
-        'En_attente' => 'warning',
-        'Annulé' => 'secondary',
-    ];
-@endphp
+<div class="container py-4">
+    <x-lobiko.page-header
+        title="Rendez-vous"
+        subtitle="Suivi des créneaux"
+        :actions="[['type' => 'primary', 'url' => route('appointments.create'), 'label' => 'Nouveau rendez-vous', 'icon' => 'plus']]"
+    />
 
-<div class="container py-5">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-        <div>
-            <p class="text-uppercase text-primary fw-semibold small mb-1">Rendez-vous</p>
-            <h1 class="h3 fw-bold mb-1">Vos rendez-vous</h1>
-            <p class="text-muted mb-0">Suivez vos prochains créneaux et planifiez une nouvelle consultation.</p>
-        </div>
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('appointments.create') }}" class="btn btn-gradient rounded-pill">
-                <i class="fas fa-plus me-2"></i> Planifier un rendez-vous
-            </a>
-            <a href="{{ route('services.teleconsultation') }}" class="btn btn-outline-primary rounded-pill">
-                <i class="fas fa-video me-2"></i> Téléconsultation
-            </a>
+    <div class="row g-3 mb-3">
+        @foreach([
+            ['label' => 'Total', 'value' => $stats['total'] ?? 0, 'color' => 'primary'],
+            ['label' => "Aujourd'hui", 'value' => $stats['aujourd_hui'] ?? 0, 'color' => 'success'],
+            ['label' => 'Confirmés', 'value' => $stats['confirmes'] ?? 0, 'color' => 'info'],
+            ['label' => 'En attente', 'value' => $stats['en_attente'] ?? 0, 'color' => 'warning'],
+        ] as $card)
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center">
+                        <div class="fw-bold fs-4 text-{{ $card['color'] }}">{{ $card['value'] }}</div>
+                        <div class="text-muted">{{ $card['label'] }}</div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <form method="GET" action="{{ route('appointments.index') }}" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Recherche</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" name="search" class="form-control" value="{{ request('search') }}" placeholder="Numéro, patient, praticien">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Statut</label>
+                    <input type="text" name="statut" class="form-control" value="{{ request('statut') }}" placeholder="en_attente">
+                </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Du</label>
+                        <input type="date" name="du" class="form-control" value="{{ request('du') }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Au</label>
+                        <input type="date" name="au" class="form-control" value="{{ request('au') }}">
+                    </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button class="btn btn-primary w-100" type="submit"><i class="fas fa-filter me-1"></i>Filtrer</button>
+                    <a href="{{ route('appointments.index') }}" class="btn btn-outline-secondary w-100"><i class="fas fa-redo me-1"></i>Réinitialiser</a>
+                </div>
+            </form>
         </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-lg-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3">Prochain créneau</h6>
-                    @if($first)
-                        <div class="d-flex align-items-start">
-                            <div class="me-3 text-primary">
-                                <i class="fas fa-calendar-day fa-2x"></i>
-                            </div>
-                            <div>
-                                <div class="fw-semibold">{{ $first['date'] }}</div>
-                                <div class="text-muted small mb-1">{{ $first['doctor'] ?? 'Praticien' }} • {{ $first['mode'] ?? 'Mode' }}</div>
-                                <span class="badge bg-{{ $badgeMap[$first['status'] ?? ''] ?? 'primary' }}">{{ $first['status'] ?? 'À venir' }}</span>
-                            </div>
-                        </div>
-                        <hr>
-                        <p class="text-muted small mb-0">Présentez-vous 5 min avant l’heure si présentiel. Pour la visio, testez votre audio/vidéo.</p>
-                    @else
-                        <p class="text-muted mb-0">Aucun rendez-vous planifié. Planifiez-en un en quelques clics.</p>
-                    @endif
-                </div>
-            </div>
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <x-lobiko.tables.datatable>
+                <x-slot name="head">
+                    <th>Numéro</th>
+                    <th>Patient</th>
+                    <th>Praticien</th>
+                    <th>Modalité</th>
+                    <th>Statut</th>
+                    <th>Date</th>
+                    <th class="text-end">Actions</th>
+                </x-slot>
+                @forelse($upcoming as $rdv)
+                    <tr>
+                        <td class="fw-semibold">{{ $rdv->numero_rdv ?? $rdv->id }}</td>
+                        <td>{{ $rdv->patient?->name ?? '-' }}</td>
+                        <td>{{ $rdv->professionnel?->name ?? '-' }}</td>
+                        <td>{{ ucfirst($rdv->modalite ?? '-') }}</td>
+                        <td><x-lobiko.ui.badge-status :status="$rdv->statut ?? 'en_attente'"/></td>
+                        <td>{{ optional($rdv->date_heure)->format('d/m/Y H:i') }}</td>
+                        <td class="text-end">
+                            <a href="{{ route('appointments.show', $rdv) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
+                            <a href="{{ route('appointments.edit', $rdv) }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-pen"></i></a>
+                            <form action="{{ route('appointments.destroy', $rdv) }}" method="POST" class="d-inline" onsubmit="return confirm('Supprimer ce rendez-vous ?');">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7">
+                            <x-lobiko.ui.empty-state
+                                title="Aucun rendez-vous"
+                                description="Ajoutez un créneau."
+                                :action="['label' => 'Nouveau rendez-vous', 'href' => route('appointments.create'), 'icon' => 'fas fa-plus']"
+                            />
+                        </td>
+                    </tr>
+                @endforelse
+            </x-lobiko.tables.datatable>
         </div>
+    </div>
 
-        <div class="col-lg-8">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold mb-0">À venir</h6>
-                        <small class="text-muted">Les 10 prochains rendez-vous</small>
-                    </div>
-                    @if(empty($upcoming))
-                        <p class="text-muted mb-0">Aucun rendez-vous prévu.</p>
-                    @else
-                        <div class="list-group list-group-flush">
-                            @foreach($upcoming as $rdv)
-                                <div class="list-group-item d-flex flex-column flex-md-row align-items-md-center justify-content-between">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="text-primary">
-                                            <i class="fas fa-clock"></i>
-                                        </div>
-                                        <div>
-                                            <div class="fw-semibold">{{ $rdv['date'] }}</div>
-                                            <div class="text-muted small">
-                                                {{ $rdv['doctor'] ?? 'Praticien' }} • {{ ucfirst($rdv['mode'] ?? 'mode') }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <span class="badge bg-{{ $badgeMap[$rdv['status'] ?? ''] ?? 'primary' }}">
-                                        {{ $rdv['status'] ?? 'À venir' }}
-                                    </span>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-            </div>
-        </div>
+    <div class="mt-3">
+        {{ $upcoming->links() }}
     </div>
 </div>
 @endsection

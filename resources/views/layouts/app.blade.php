@@ -251,6 +251,60 @@
         <div class="spinner"></div>
     </div>
 
+    <!-- Flash Messages -->
+    <div class="flash-stack" aria-live="polite" aria-atomic="true">
+        @foreach (['success', 'error', 'warning', 'info'] as $type)
+            @if(session($type))
+                @php
+                    $icons = [
+                        'success' => 'fa-check-circle',
+                        'error' => 'fa-circle-exclamation',
+                        'warning' => 'fa-triangle-exclamation',
+                        'info' => 'fa-info-circle',
+                    ];
+                    $titles = [
+                        'success' => 'Succès',
+                        'error' => 'Erreur',
+                        'warning' => 'Attention',
+                        'info' => 'Information',
+                    ];
+                @endphp
+                <div class="flash-toast flash-{{ $type }}">
+                    <div class="icon">
+                        <i class="fas {{ $icons[$type] }}"></i>
+                    </div>
+                    <div class="content">
+                        <div class="title">{{ $titles[$type] }}</div>
+                        <p class="message mb-0">{{ session($type) }}</p>
+                    </div>
+                    <button type="button" class="btn-close" aria-label="Fermer"></button>
+                </div>
+            @endif
+        @endforeach
+
+        @if ($errors->any())
+            <div class="flash-toast flash-error">
+                <div class="icon">
+                    <i class="fas fa-list-check"></i>
+                </div>
+                <div class="content">
+                    <div class="title">Veuillez vérifier</div>
+                    <p class="message mb-1">Certains champs sont à corriger.</p>
+                    <ul class="mb-0 text-muted small ps-3">
+                    @php $errorList = $errors->all(); @endphp
+                    @foreach (array_slice($errorList, 0, 3) as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                    @if(count($errorList) > 3)
+                        <li>+ {{ count($errorList) - 3 }} autres</li>
+                    @endif
+                    </ul>
+                </div>
+                <button type="button" class="btn-close" aria-label="Fermer"></button>
+            </div>
+        @endif
+    </div>
+
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
         <div class="container">
@@ -289,6 +343,7 @@
                                         <li><a class="dropdown-item" href="{{ route('admin.doctors.index') }}"><i class="fas fa-user-md me-2"></i>Médecins</a></li>
                                         <li><a class="dropdown-item" href="{{ route('admin.specialties.index') }}"><i class="fas fa-sitemap me-2"></i>Spécialités</a></li>
                                         <li><a class="dropdown-item" href="{{ route('admin.services.index') }}"><i class="fas fa-layer-group me-2"></i>Services</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('admin.laboratoires.index') }}"><i class="fas fa-vial me-2"></i>Laboratoires</a></li>
                                         <li><a class="dropdown-item" href="{{ route('partners') }}"><i class="fas fa-handshake me-2"></i>Partenaires</a></li>
                                     @endif
                                     @if(Route::has('admin.structures.index'))
@@ -297,6 +352,7 @@
                                         <li><a class="dropdown-item" href="{{ route('admin.doctors.index') }}"><i class="fas fa-user-md me-2"></i>Médecins</a></li>
                                         <li><a class="dropdown-item" href="{{ route('admin.specialties.index') }}"><i class="fas fa-sitemap me-2"></i>Spécialités</a></li>
                                         <li><a class="dropdown-item" href="{{ route('admin.services.index') }}"><i class="fas fa-layer-group me-2"></i>Services</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('admin.laboratoires.index') }}"><i class="fas fa-vial me-2"></i>Laboratoires</a></li>
                                         <li><a class="dropdown-item" href="{{ route('admin.payments.index') }}"><i class="fas fa-credit-card me-2"></i>Paiements</a></li>
                                         <li><a class="dropdown-item" href="{{ route('teleconsultation.index') }}"><i class="fas fa-video me-2"></i>Téléconsultation</a></li>
                                     @endif
@@ -310,8 +366,14 @@
                                     @if(Route::has('ordonnances.index'))
                                         <li><a class="dropdown-item" href="{{ route('ordonnances.index') }}"><i class="fas fa-file-prescription me-2"></i>Ordonnances</a></li>
                                     @endif
-                                    @if(Route::has('factures.index'))
-                                        <li><a class="dropdown-item" href="{{ route('factures.index') }}"><i class="fas fa-file-invoice-dollar me-2"></i>Factures</a></li>
+                                    @if(Route::has('commandes-pharma.index'))
+                                        <li><a class="dropdown-item" href="{{ route('commandes-pharma.index') }}"><i class="fas fa-capsules me-2"></i>Commandes pharma</a></li>
+                                    @endif
+                                    @if(Route::has('admin.devis.index'))
+                                        <li><a class="dropdown-item" href="{{ route('admin.devis.index') }}"><i class="fas fa-file-signature me-2"></i>Devis</a></li>
+                                    @endif
+                                    @if(Route::has('admin.factures.index'))
+                                        <li><a class="dropdown-item" href="{{ route('admin.factures.index') }}"><i class="fas fa-file-invoice-dollar me-2"></i>Factures</a></li>
                                     @endif
                                 </ul>
                             </li>
@@ -500,6 +562,7 @@
                             <li><a href="{{ route('contact') }}" class="footer-link">Contact</a></li>
                             <li><a href="{{ route('privacy') }}" class="footer-link">Confidentialité</a></li>
                             <li><a href="{{ route('terms') }}" class="footer-link">CGU</a></li>
+                            <li><a href="{{ route('visa') }}" class="footer-link">Visa</a></li>
                         </ul>
                     </div>
                 </div>
@@ -605,6 +668,14 @@
             $('.select2').select2({
                 theme: 'bootstrap-5'
             });
+
+            // Flash toasts auto-hide + close
+            const hideToast = (toast) => toast.style.display = 'none';
+            document.querySelectorAll('.flash-toast').forEach((toast) => {
+                const closer = toast.querySelector('.btn-close');
+                closer?.addEventListener('click', () => hideToast(toast));
+                setTimeout(() => hideToast(toast), 6000);
+            });
         });
 
         // Show loading spinner
@@ -696,6 +767,71 @@
             background: #128c7e;
             color: white;
             transform: scale(1.1);
+        }
+
+        /* Flash / Toast Messages */
+        .flash-stack {
+            position: fixed;
+            top: 90px;
+            right: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1080;
+            max-width: 360px;
+        }
+
+        .flash-toast {
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+            padding: 12px 14px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            background: #fff;
+            animation: fadeSlideIn 0.3s ease;
+        }
+
+        .flash-toast .icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .flash-toast .content {
+            flex: 1;
+        }
+
+        .flash-toast .title {
+            font-weight: 700;
+            margin-bottom: 2px;
+            color: #0f172a;
+        }
+
+        .flash-toast .message {
+            margin: 0;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .flash-toast .btn-close {
+            box-shadow: none;
+        }
+
+        .flash-success .icon { background: #22c55e; }
+        .flash-error .icon { background: #ef4444; }
+        .flash-warning .icon { background: #f59e0b; }
+        .flash-info .icon { background: #3b82f6; }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 

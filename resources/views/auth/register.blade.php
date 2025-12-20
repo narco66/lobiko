@@ -1,59 +1,48 @@
 <x-guest-layout>
+    <div class="mb-4 text-center">
+        <h1 class="auth-title">Rejoindre LOBIKO</h1>
+        <p class="auth-subtitle">Créez votre compte pour accéder aux rendez-vous, téléconsultations et e-pharmacie.</p>
+    </div>
+
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
-        <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
-        </div>
-
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
-
-        <!-- Phone -->
-        <div class="mt-4">
-            <x-input-label for="phone" :value="__('Phone')" />
-            <x-text-input id="phone" class="block mt-1 w-full" type="text" name="phone" :value="old('phone')" autocomplete="tel" />
-            <x-input-error :messages="$errors->get('phone')" class="mt-2" />
-        </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="tc-label" for="name">Nom complet</label>
+                <input id="name" type="text" name="name" value="{{ old('name') }}" class="form-control form-control-lg" required autofocus autocomplete="name">
+                <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            </div>
+            <div class="col-md-6">
+                <label class="tc-label" for="email">Email</label>
+                <input id="email" type="email" name="email" value="{{ old('email') }}" class="form-control form-control-lg" required autocomplete="username">
+                <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            </div>
+            <div class="col-md-6">
+                <label class="tc-label" for="phone">Téléphone</label>
+                <input id="phone" type="text" name="phone" value="{{ old('phone') }}" class="form-control form-control-lg" autocomplete="tel">
+                <x-input-error :messages="$errors->get('phone')" class="mt-2" />
+            </div>
+            <div class="col-md-6">
+                <label class="tc-label" for="password">Mot de passe</label>
+                <input id="password" type="password" name="password" class="form-control form-control-lg" required autocomplete="new-password">
+                <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            </div>
+            <div class="col-md-6">
+                <label class="tc-label" for="password_confirmation">Confirmer le mot de passe</label>
+                <input id="password_confirmation" type="password" name="password_confirmation" class="form-control form-control-lg" required autocomplete="new-password">
+                <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            </div>
+            <div class="col-12">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-1">
+                    <a class="text-muted small text-decoration-none" href="{{ route('login') }}">
+                        Déjà inscrit ? Connexion
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4">
+                        Créer mon compte
+                    </button>
+                </div>
+            </div>
         </div>
     </form>
 </x-guest-layout>
